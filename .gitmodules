@@ -1,0 +1,3 @@
+[submodule "dependencies/im3d"]
+	path = dependencies/im3d
+	url = https://github.com/john-chapman/im3d.git
