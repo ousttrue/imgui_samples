@@ -87,9 +87,8 @@ public:
         glDeleteProgram(g_Im3dShaderTriangles);
     }
 
-    void Draw(const float *viewProj, int w, int h)
+    void Draw(const float *viewProj)
     {
-        glViewport(0, 0, (GLsizei)w, (GLsizei)h);
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -245,11 +244,11 @@ void Im3dGui::Manipulate(float world[16])
     Im3d::Gizmo("GizmoUnified", world);
 }
 
-void Im3dGui::Draw(const float *viewProjection, int w, int h)
+void Im3dGui::Draw(const float *viewProjection)
 {
     Im3d::EndFrame();
 
-    m_impl->Draw(viewProjection, w, h);
+    m_impl->Draw(viewProjection);
 
     glDisable(GL_BLEND);
 }

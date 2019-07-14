@@ -68,9 +68,9 @@ int main(int argc, char **argv)
         // render
         renderer.NewFrame(w, h); // setViewPort & clear background
         gizmo.NewFrame(&camera.state, &mouse, deltaTime);
-        gizmo.Manipulate(world);
+        gizmo.Manipulate(world); // process gizmo, not draw, build draw list.
         renderer.DrawTeapot(camera.state.viewProjection.data(), world); // use manipulated world
-        gizmo.Draw(camera.state.viewProjection.data(), w, h);
+        gizmo.Draw(camera.state.viewProjection.data()); // draw gizmo
 
         // transfer backbuffer
         wgl.Present();

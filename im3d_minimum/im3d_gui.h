@@ -16,5 +16,5 @@ public:
     ~Im3dGui();
     void NewFrame(const camera::CameraState *camera, const MouseState *mouse, float deltaTime);
     void Manipulate(float world[16]);
-    void Draw(const float *viewProjection, int w, int h);
+    void Draw(const float *viewProjection);
 };
