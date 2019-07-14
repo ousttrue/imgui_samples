@@ -19,10 +19,11 @@ GL3Renderer::~GL3Renderer()
 {
 }
 
-void GL3Renderer::BeginFrame()
+void GL3Renderer::BeginFrame(int screenWidth, int screenHeight)
 {
     glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, screenWidth, screenHeight);
 }
 
 void GL3Renderer::EndFrame()
