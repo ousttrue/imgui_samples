@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
         0,
         0,
-        -2,
+        0,
         1,
     };
 
@@ -45,16 +45,20 @@ int main(int argc, char **argv)
 
     while (window.IsRunning())
     {
+        // update
         int w, h;
         std::tie(w, h) = window.GetSize();
         camera.SetScreenSize(w, h);
 
+        auto mouse = window.GetMouseState();
+        camera.MouseInput(mouse);
+
+        camera.CalcViewProjection();
+
+        // render
         renderer.BeginFrame(w, h);
-
-        renderer.DrawTeapot(camera.projection, world);
-
+        renderer.DrawTeapot(camera.viewProjection.data(), world);
         renderer.EndFrame();
-
         wgl.Present();
     }
 

@@ -1,8 +1,9 @@
 #include "win32_window.h"
 #include <Windows.h>
+#include <windowsx.h> // GET_X_LPARAM macros
 #include <assert.h>
 
-static LRESULT CALLBACK WindowProc(HWND _hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+static LRESULT CALLBACK WindowProc(HWND _hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 class Win32WindowImpl *g_window = nullptr;
 
 static ATOM GetOrRegisterWindowClass(HINSTANCE hInstance, const TCHAR *className)
@@ -27,6 +28,7 @@ class Win32WindowImpl
     HWND m_hwnd = NULL;
     int m_width = 0;
     int m_height = 0;
+    MouseState m_mouseState = {0};
 
 public:
     Win32WindowImpl(HWND hWnd)
@@ -71,16 +73,24 @@ public:
     {
         return std::make_tuple(m_width, m_height);
     }
+    const MouseState &GetMouseState() const
+    {
+        return m_mouseState;
+    }
+    MouseState &GetMouseState()
+    {
+        return m_mouseState;
+    }
 };
 
-static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
     case WM_SIZE:
     {
-        auto w = (int)LOWORD(lparam);
-        auto h = (int)HIWORD(lparam);
+        auto w = (int)LOWORD(lParam);
+        auto h = (int)HIWORD(lParam);
         g_window->Resize(w, h);
         break;
     }
@@ -93,10 +103,67 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lp
         PostQuitMessage(0);
         break;
 
+    case WM_MOUSEMOVE:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.X = GET_X_LPARAM(lParam);
+        mouse.Y = GET_Y_LPARAM(lParam);
+        return 0;
+    }
+
+    case WM_LBUTTONDOWN:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Down(ButtonFlags::Left);
+        return 0;
+    }
+
+    case WM_LBUTTONUP:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Up(ButtonFlags::Left);
+        return 0;
+    }
+
+    case WM_MBUTTONDOWN:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Down(ButtonFlags::Middle);
+        return 0;
+    }
+
+    case WM_MBUTTONUP:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Up(ButtonFlags::Middle);
+        return 0;
+    }
+
+    case WM_RBUTTONDOWN:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Down(ButtonFlags::Right);
+        return 0;
+    }
+
+    case WM_RBUTTONUP:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Up(ButtonFlags::Right);
+        return 0;
+    }
+
+    case WM_MOUSEWHEEL:
+    {
+        auto &mouse = g_window->GetMouseState();
+        mouse.Wheel = GET_WHEEL_DELTA_WPARAM(wParam);
+        return 0;
+    }
+
     default:
         break;
     };
-    return DefWindowProc(hWnd, msg, wparam, lparam);
+    return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 Win32Window::Win32Window()
@@ -156,12 +223,11 @@ bool Win32Window::HasFocus() const
     return m_impl->GetHandle() == GetFocus();
 }
 
-std::tuple<int, int> Win32Window::GetCursorPosition() const
+MouseState Win32Window::GetMouseState() const
 {
-    POINT p = {};
-    GetCursorPos(&p);
-    ScreenToClient(m_impl->GetHandle(), &p);
-    return std::make_tuple(p.x, p.y);
+    auto state = m_impl->GetMouseState();
+    m_impl->GetMouseState().Wheel = 0; // clear
+    return state;
 }
 
 float Win32Window::GetTimeSeconds() const

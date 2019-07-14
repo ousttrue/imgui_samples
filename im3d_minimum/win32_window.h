@@ -1,4 +1,5 @@
 #pragma once
+#include "mouse_state.h"
 #include <tuple>
 
 ///
@@ -19,6 +20,6 @@ public:
     void *GetHandle() const;
     std::tuple<int, int> GetSize() const;
     bool HasFocus() const;
-    std::tuple<int, int> GetCursorPosition() const;
+    MouseState GetMouseState() const;
     float GetTimeSeconds() const;
 };
