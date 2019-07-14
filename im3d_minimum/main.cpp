@@ -45,20 +45,19 @@ int main(int argc, char **argv)
 
     while (window.IsRunning())
     {
-        // update
+        // camera update
         int w, h;
         std::tie(w, h) = window.GetSize();
         camera.SetScreenSize(w, h);
-
         auto mouse = window.GetMouseState();
         camera.MouseInput(mouse);
-
         camera.CalcViewProjection();
 
         // render
-        renderer.BeginFrame(w, h);
+        renderer.NewFrame(w, h); // setViewPort & clear background
         renderer.DrawTeapot(camera.viewProjection.data(), world);
-        renderer.EndFrame();
+
+        // transfer backbuffer
         wgl.Present();
     }
 

@@ -8,7 +8,6 @@ class GL3Renderer
 public:
     GL3Renderer();
     ~GL3Renderer();
-    void BeginFrame(int screenWidth, int screenHeight);
-    void EndFrame();
+    void NewFrame(int screenWidth, int screenHeight);
     void DrawTeapot(const float *projection, const float *world);
 };
