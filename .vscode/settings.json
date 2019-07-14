@@ -4,14 +4,20 @@
         "Integerv",
         "LRESULT",
         "Lenum",
+        "Luint",
+        "Lvoid",
         "OPENGL",
         "OWNDC",
         "PFNWGLCREATECONTEXTATTRIBSARBPROC",
+        "Programiv",
         "WNDCLASSEX",
         "glew",
         "imgui",
         "lparam",
         "pformat",
         "vsync"
-    ]
+    ],
+    "files.associations": {
+        "*.glsl": "cpp"
+    }
 }

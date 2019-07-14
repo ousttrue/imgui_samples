@@ -8,6 +8,7 @@ LINK_DIRECTORIES(
     )
 ADD_DEFINITIONS(
     -DNOMINMAX
+    -D_USE_MATH_DEFINES
     )
 ADD_COMPILE_OPTIONS(
     /std:c++latest 

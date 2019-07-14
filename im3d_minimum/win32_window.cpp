@@ -16,7 +16,7 @@ static ATOM GetOrRegisterWindowClass(HINSTANCE hInstance, const TCHAR *className
         wc.lpfnWndProc = WindowProc;
         wc.hInstance = hInstance;
         wc.lpszClassName = className;
-        // wc.hCursor = LoadCursor(0, IDC_ARROW);
+        wc.hCursor = LoadCursor(0, IDC_ARROW);
         wndclassex = RegisterClassEx(&wc);
     }
     return wndclassex;
