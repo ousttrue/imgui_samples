@@ -134,10 +134,12 @@ WGLContext::~WGLContext()
 
 bool WGLContext::Create(void* hwnd, int major, int minor)
 {
+    m_hwnd = hwnd;
     return m_impl->Initialize((HWND)hwnd, major, minor);
 }
 
 void WGLContext::Present()
 {
+    ValidateRect((HWND)m_hwnd, 0); // suppress WM_PAINT
     m_impl->Present();
 }

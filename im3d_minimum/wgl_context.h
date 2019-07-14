@@ -4,6 +4,7 @@ class WGLContextImpl;
 class WGLContext
 {
     WGLContextImpl *m_impl = nullptr;
+    void *m_hwnd = nullptr;
 
 public:
     WGLContext();

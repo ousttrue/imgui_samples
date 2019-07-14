@@ -65,14 +65,12 @@ int main(int argc, char **argv)
         }
         lastTime = time;
 
-        renderer.NewFrame(w, h); // setViewPort & clear background
-
         // render
-        gizmo.NewFrame(&camera.state, mouse.X, mouse.Y, deltaTime);
+        renderer.NewFrame(w, h); // setViewPort & clear background
+        gizmo.NewFrame(&camera.state, &mouse, deltaTime);
         gizmo.Manipulate(world);
-        gizmo.Draw(camera.state.viewProjection.data(), w, h);
-
         renderer.DrawTeapot(camera.state.viewProjection.data(), world); // use manipulated world
+        gizmo.Draw(camera.state.viewProjection.data(), w, h);
 
         // transfer backbuffer
         wgl.Present();

@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include "gl3_renderer.h"
 #include "camera_state.h"
+#include "mouse_state.h"
 
 const std::string g_points_vs =
 #include "im3d_points.vs"
@@ -173,7 +174,7 @@ Im3dGui::~Im3dGui()
     delete m_impl;
 }
 
-void Im3dGui::NewFrame(const camera::CameraState *c, int x, int y, float deltaTime)
+void Im3dGui::NewFrame(const camera::CameraState *c, const MouseState *mouse, float deltaTime)
 {
     auto &ad = Im3d::GetAppData();
 
@@ -182,16 +183,15 @@ void Im3dGui::NewFrame(const camera::CameraState *c, int x, int y, float deltaTi
 
     auto &inv = c->viewInverse;
     ad.m_viewOrigin = Im3d::Vec3(inv[12], inv[13], inv[14]); // for VR use the head position
-    ad.m_viewDirection = Im3d::Vec3(inv[8], inv[9], inv[10]);
+    ad.m_viewDirection = Im3d::Vec3(-inv[8], -inv[9], -inv[10]);
     ad.m_worldUp = Im3d::Vec3(0.0f, 1.0f, 0.0f); // used internally for generating orthonormal bases
     ad.m_projOrtho = false;
 
     // m_projScaleY controls how gizmos are scaled in world space to maintain a constant screen height
     ad.m_projScaleY = tanf(c->fovYRadians * 0.5f) * 2.0f;
 
-#if 0
     // World space cursor ray from mouse position; for VR this might be the position/orientation of the HMD or a tracked controller.
-    Im3d::Vec2 cursorPos((float)x, (float)y);
+    Im3d::Vec2 cursorPos((float)mouse->X, (float)mouse->Y);
     cursorPos = (cursorPos / ad.m_viewportSize) * 2.0f - 1.0f;
     cursorPos.y = -cursorPos.y; // window origin is top-left, ndc is bottom-left
     Im3d::Vec3 rayOrigin, rayDirection;
@@ -201,10 +201,10 @@ void Im3dGui::NewFrame(const camera::CameraState *c, int x, int y, float deltaTi
         rayDirection.y = cursorPos.y / c->projection[5];
         rayDirection.z = -1.0f;
         Im3d::Mat4 camWorld(
-            c->viewInverse[0], c->viewInverse[1], c->viewInverse[2], c->viewInverse[3],
-            c->viewInverse[4], c->viewInverse[5], c->viewInverse[6], c->viewInverse[7],
-            c->viewInverse[8], c->viewInverse[9], c->viewInverse[10], c->viewInverse[11],
-            c->viewInverse[12], c->viewInverse[13], c->viewInverse[14], c->viewInverse[15]);
+            c->viewInverse[0], c->viewInverse[4], c->viewInverse[8], c->viewInverse[12],
+            c->viewInverse[1], c->viewInverse[5], c->viewInverse[9], c->viewInverse[13],
+            c->viewInverse[2], c->viewInverse[6], c->viewInverse[10], c->viewInverse[14],
+            c->viewInverse[3], c->viewInverse[7], c->viewInverse[11], c->viewInverse[15]);
         rayDirection = camWorld * Im3d::Vec4(Im3d::Normalize(rayDirection), 0.0f);
     }
     ad.m_cursorRayOrigin = rayOrigin;
@@ -220,8 +220,10 @@ void Im3dGui::NewFrame(const camera::CameraState *c, int x, int y, float deltaTi
 
     // Fill the key state array; using GetAsyncKeyState here but this could equally well be done via the window proc.
     // All key states have an equivalent (and more descriptive) 'Action_' enum.
-    ad.m_keyDown[Im3d::Mouse_Left /*Im3d::Action_Select*/] = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+    //ad.m_keyDown[Im3d::Mouse_Left /*Im3d::Action_Select*/] = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+    ad.m_keyDown[Im3d::Mouse_Left /*Im3d::Action_Select*/] = mouse->IsDown(ButtonFlags::Left);
 
+#if 0
     // The following key states control which gizmo to use for the generic Gizmo() function. Here using the left ctrl key as an additional predicate.
     bool ctrlDown = (GetAsyncKeyState(VK_LCONTROL) & 0x8000) != 0;
     ad.m_keyDown[Im3d::Key_L /*Action_GizmoLocal*/] = ctrlDown && (GetAsyncKeyState(0x4c) & 0x8000) != 0;
