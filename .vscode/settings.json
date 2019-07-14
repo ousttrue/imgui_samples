@@ -1,9 +1,17 @@
 {
     "cSpell.words": [
+        "HGLRC",
+        "Integerv",
         "LRESULT",
+        "Lenum",
+        "OPENGL",
         "OWNDC",
+        "PFNWGLCREATECONTEXTATTRIBSARBPROC",
         "WNDCLASSEX",
+        "glew",
         "imgui",
-        "lparam"
+        "lparam",
+        "pformat",
+        "vsync"
     ]
 }

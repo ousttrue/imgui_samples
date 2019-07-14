@@ -1,20 +1,16 @@
-SET(SUB_NAME im3d_minimum)
+SET(SUB_NAME glew)
 
 FILE(GLOB SRC
-        *.cpp
-        # GL/glew.c
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/examples/common/GL/*
     ) 
-ADD_EXECUTABLE(${SUB_NAME}
+ADD_LIBRARY(${SUB_NAME}
     ${SRC}
     )
 TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
-    UNICODE
-    _UNICODE
+    GLEW_BUILD
     )
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     )
 TARGET_LINK_LIBRARIES(${SUB_NAME}
-    OPENGL32
-    glew
-    winmm
+    # OPENGL32
     )
