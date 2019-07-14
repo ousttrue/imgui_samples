@@ -2,58 +2,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-inline float dot(const float *row, const float *col)
-{
-    auto a = row[0] * col[0];
-    auto b = row[1] * col[4];
-    auto c = row[2] * col[8];
-    auto d = row[3] * col[12];
-    auto value = a + b + c + d;
-    return value;
-}
-
-inline std::array<float, 16> Mult(const std::array<float, 16> &l, const std::array<float, 16> &r)
-{
-    auto _11 = dot(&l[0], &r[0]);
-    auto _12 = dot(&l[0], &r[1]);
-    auto _13 = dot(&l[0], &r[2]);
-    auto _14 = dot(&l[0], &r[3]);
-
-    auto _21 = dot(&l[4], &r[0]);
-    auto _22 = dot(&l[4], &r[1]);
-    auto _23 = dot(&l[4], &r[2]);
-    auto _24 = dot(&l[4], &r[3]);
-
-    auto _31 = dot(&l[8], &r[0]);
-    auto _32 = dot(&l[8], &r[1]);
-    auto _33 = dot(&l[8], &r[2]);
-    auto _34 = dot(&l[8], &r[3]);
-
-    auto _41 = dot(&l[12], &r[0]);
-    auto _42 = dot(&l[12], &r[1]);
-    auto _43 = dot(&l[12], &r[2]);
-    auto _44 = dot(&l[12], &r[3]);
-
-    return std::array<float, 16>{
-        _11,
-        _12,
-        _13,
-        _14,
-        _21,
-        _22,
-        _23,
-        _24,
-        _31,
-        _32,
-        _33,
-        _34,
-        _41,
-        _42,
-        _43,
-        _44,
-    };
-}
-
 void OrbitCamera::CalcView()
 {
     auto ys = (float)sin(yawRadians);
@@ -123,44 +71,44 @@ void OrbitCamera::CalcView()
         1,
     };
 
-    auto yawPitch = Mult(yaw, pitch);
-    view = Mult(yawPitch, t);
+    auto yawPitch = camera::Mult(yaw, pitch);
+    state.view = camera::Mult(yawPitch, t);
+
+    t[12] *= -1;
+    t[13] *= -1;
+    t[14] *= -1;
+    camera::Transpose(yawPitch);
+    state.viewInverse = camera::Mult(t, yawPitch);
 }
 
 void OrbitCamera::CalcPerspective()
 {
-    auto rad = fovYDegrees / 180.0f * M_PI;
-    const float f = static_cast<float>(1.0f / tan(rad / 2.0));
+    const float f = static_cast<float>(1.0f / tan(state.fovYRadians / 2.0));
 
-    projection[0] = f / aspectRatio;
-    projection[1] = 0.0f;
-    projection[2] = 0.0f;
-    projection[3] = 0.0f;
+    state.projection[0] = f / aspectRatio;
+    state.projection[1] = 0.0f;
+    state.projection[2] = 0.0f;
+    state.projection[3] = 0.0f;
 
-    projection[4] = 0.0f;
-    projection[5] = f;
-    projection[6] = 0.0f;
-    projection[7] = 0.0f;
+    state.projection[4] = 0.0f;
+    state.projection[5] = f;
+    state.projection[6] = 0.0f;
+    state.projection[7] = 0.0f;
 
-    projection[8] = 0.0f;
-    projection[9] = 0.0f;
-    projection[10] = (zNear + zFar) / (zNear - zFar);
-    projection[11] = -1;
+    state.projection[8] = 0.0f;
+    state.projection[9] = 0.0f;
+    state.projection[10] = (zNear + zFar) / (zNear - zFar);
+    state.projection[11] = -1;
 
-    projection[12] = 0.0f;
-    projection[13] = 0.0f;
-    projection[14] = (2 * zFar * zNear) / (zNear - zFar);
-    projection[15] = 0.0f;
+    state.projection[12] = 0.0f;
+    state.projection[13] = 0.0f;
+    state.projection[14] = (2 * zFar * zNear) / (zNear - zFar);
+    state.projection[15] = 0.0f;
 }
 
-void OrbitCamera::CalcViewProjection()
+void OrbitCamera::SetScreenSize(float w, float h)
 {
-    viewProjection = Mult(view, projection);
-}
-
-void OrbitCamera::SetScreenSize(int w, int h)
-{
-    if (w == screenWidth && h == screenHeight)
+    if (w == state.viewportWidth && h == state.viewportHeight)
     {
         return;
     }
@@ -172,8 +120,8 @@ void OrbitCamera::SetScreenSize(int w, int h)
     {
         aspectRatio = w / (float)h;
     }
-    screenWidth = w;
-    screenHeight = h;
+    state.viewportWidth = w;
+    state.viewportHeight = h;
     CalcPerspective();
 }
 
@@ -192,8 +140,8 @@ void OrbitCamera::MouseInput(const MouseState &mouse)
         }
         if (mouse.IsDown(ButtonFlags::Middle))
         {
-            shiftX -= deltaX / (float)screenHeight * shiftZ;
-            shiftY += deltaY / (float)screenHeight * shiftZ;
+            shiftX -= deltaX / (float)state.viewportHeight * shiftZ;
+            shiftY += deltaY / (float)state.viewportHeight * shiftZ;
         }
         if (mouse.Wheel > 0)
         {

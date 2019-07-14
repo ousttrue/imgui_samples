@@ -24,6 +24,11 @@ void GL3Renderer::NewFrame(int screenWidth, int screenHeight)
     glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, screenWidth, screenHeight);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+
+    glDisable(GL_BLEND);
 }
 
 static GLuint CompileShader(GLenum stage, const std::string &src)
@@ -75,7 +80,33 @@ static bool LinkShaderProgram(GLuint _handle)
     return true;
 }
 
-void GL3Renderer::DrawTeapot(const float *projection, const float *world)
+unsigned int CreateShader(const std::string &vsSrc, const std::string &fsSrc)
+{
+    auto vs = CompileShader(GL_VERTEX_SHADER, vsSrc);
+    if (!vs)
+    {
+        return 0;
+    }
+    auto fs = CompileShader(GL_FRAGMENT_SHADER, fsSrc);
+    if (!fs)
+    {
+        return 0;
+    }
+
+    auto shTeapot = glCreateProgram();
+    glAttachShader(shTeapot, vs);
+    glAttachShader(shTeapot, fs);
+    bool ret = LinkShaderProgram(shTeapot);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    if (!ret)
+    {
+        return 0;
+    }
+    return shTeapot;
+}
+
+void GL3Renderer::DrawTeapot(const float *viewProjection, const float *world)
 {
     static GLuint shTeapot;
     static GLuint vbTeapot;
@@ -83,27 +114,7 @@ void GL3Renderer::DrawTeapot(const float *projection, const float *world)
     static GLuint vaTeapot;
     if (shTeapot == 0)
     {
-        auto vs = CompileShader(GL_VERTEX_SHADER, g_vs);
-        if (!vs)
-        {
-            return;
-        }
-        auto fs = CompileShader(GL_FRAGMENT_SHADER, g_fs);
-        if (!fs)
-        {
-            return;
-        }
-
-        shTeapot = glCreateProgram();
-        glAttachShader(shTeapot, vs);
-        glAttachShader(shTeapot, fs);
-        bool ret = LinkShaderProgram(shTeapot);
-        glDeleteShader(vs);
-        glDeleteShader(fs);
-        if (!ret)
-        {
-            return;
-        }
+        shTeapot = CreateShader(g_vs, g_fs);
         glGenBuffers(1, &vbTeapot);
         glGenBuffers(1, &ibTeapot);
         glGenVertexArrays(1, &vaTeapot);
@@ -123,7 +134,7 @@ void GL3Renderer::DrawTeapot(const float *projection, const float *world)
     }
     glUseProgram(shTeapot);
     glUniformMatrix4fv(glGetUniformLocation(shTeapot, "uWorldMatrix"), 1, false, world);
-    glUniformMatrix4fv(glGetUniformLocation(shTeapot, "uViewProjMatrix"), 1, false, projection);
+    glUniformMatrix4fv(glGetUniformLocation(shTeapot, "uViewProjMatrix"), 1, false, viewProjection);
     glBindVertexArray(vaTeapot);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

@@ -2,10 +2,13 @@
     "cSpell.words": [
         "HGLRC",
         "Integerv",
+        "LBUTTON",
         "LBUTTONDOWN",
         "LBUTTONUP",
+        "LCONTROL",
         "LRESULT",
         "Lenum",
+        "Lsizeiptr",
         "Luint",
         "Lvoid",
         "MBUTTONDOWN",
@@ -13,6 +16,7 @@
         "OPENGL",
         "OWNDC",
         "PFNWGLCREATECONTEXTATTRIBSARBPROC",
+        "PRIMTIIVES",
         "Programiv",
         "RBUTTONDOWN",
         "RBUTTONUP",
@@ -21,6 +25,7 @@
         "imgui",
         "lparam",
         "pformat",
+        "verts",
         "vsync"
     ],
     "files.associations": {
