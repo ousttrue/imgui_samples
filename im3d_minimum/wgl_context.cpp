@@ -1,4 +1,4 @@
-#include "wglcontext.h"
+#include "wgl_context.h"
 #include <GL/glew.h>
 #include <GL/wglew.h>
 #include <stdio.h>

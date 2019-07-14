@@ -1,5 +1,5 @@
 #include "win32_window.h"
-#include "wglcontext.h"
+#include "wgl_context.h"
 
 int main(int argc, char **argv)
 {
