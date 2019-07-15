@@ -4,6 +4,8 @@ PROJECT(imgui_samples VERSION 0.1.0)
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_LIST_DIR}/dependencies/im3d
     ${CMAKE_CURRENT_LIST_DIR}/dependencies/im3d/examples/common
+    ${CMAKE_CURRENT_LIST_DIR}/dependencies/json/single_include
+    ${CMAKE_CURRENT_LIST_DIR}/dependencies/plog/include
     )
 LINK_DIRECTORIES(
     )

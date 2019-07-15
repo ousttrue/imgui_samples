@@ -1,6 +1,5 @@
 #pragma once
-#include "mouse_state.h"
-#include <tuple>
+#include "window_state.h"
 
 ///
 /// Windows API Window
@@ -17,9 +16,6 @@ public:
     ~Win32Window();
     bool Create(int w, int h, const wchar_t *title);
     bool IsRunning();
-    void *GetHandle() const;
-    std::tuple<int, int> GetSize() const;
-    bool HasFocus() const;
-    MouseState GetMouseState() const;
+    const WindowState &GetState() const;
     float GetTimeSeconds() const;
 };

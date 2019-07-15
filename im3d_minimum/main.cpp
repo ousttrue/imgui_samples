@@ -11,9 +11,10 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+    auto hwnd = window.GetState().Handle;
 
     WGLContext wgl;
-    if (!wgl.Create(window.GetHandle(), 3, 0))
+    if (!wgl.Create(hwnd, 3, 0))
     {
         return 2;
     }
@@ -45,17 +46,18 @@ int main(int argc, char **argv)
     OrbitCamera camera;
 
     Im3dGui gizmo;
+    if(!gizmo.Initialize()){
+        return 3;
+    }
 
     float lastTime = 0;
 
     while (window.IsRunning())
     {
         // camera update
-        int w, h;
-        std::tie(w, h) = window.GetSize();
-        camera.SetScreenSize((float)w, (float)h);
-        auto mouse = window.GetMouseState();
-        camera.MouseInput(mouse);
+        auto &state = window.GetState();
+        camera.SetScreenSize((float)state.Width, (float)state.Height);
+        camera.MouseInput(state.Mouse);
         camera.state.CalcViewProjection();
         auto time = window.GetTimeSeconds();
         auto deltaTime = 0.0016f;
@@ -66,8 +68,8 @@ int main(int argc, char **argv)
         lastTime = time;
 
         // render
-        renderer.NewFrame(w, h); // setViewPort & clear background
-        gizmo.NewFrame(&camera.state, &mouse, deltaTime);
+        renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
+        gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
         gizmo.Manipulate(world); // process gizmo, not draw, build draw list.
         renderer.DrawTeapot(camera.state.viewProjection.data(), world); // use manipulated world
         gizmo.Draw(camera.state.viewProjection.data()); // draw gizmo

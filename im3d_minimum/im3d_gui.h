@@ -14,6 +14,7 @@ class Im3dGui
 public:
     Im3dGui();
     ~Im3dGui();
+    bool Initialize();
     void NewFrame(const camera::CameraState *camera, const MouseState *mouse, float deltaTime);
     void Manipulate(float world[16]);
     void Draw(const float *viewProjection);

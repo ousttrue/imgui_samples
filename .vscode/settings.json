@@ -24,11 +24,13 @@
         "glew",
         "imgui",
         "lparam",
+        "nlohmann",
         "pformat",
         "verts",
         "vsync"
     ],
     "files.associations": {
         "*.glsl": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

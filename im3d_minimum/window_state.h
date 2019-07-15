@@ -26,3 +26,11 @@ struct MouseState
         return (int)Buttons & (int)button;
     }
 };
+
+struct WindowState
+{
+    void *Handle;
+    int Width;
+    int Height;
+    MouseState Mouse;
+};
