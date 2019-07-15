@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
+            "name": "gl3",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/im3d_minimum_gl3/im3d_minimum_gl3.exe",
@@ -13,6 +13,22 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
+            ],
+            "externalConsole": false
+        },
+        {
+            "name": "es3",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/im3d_minimum_es3/im3d_minimum_es3.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
+                }
             ],
             "externalConsole": false
         }

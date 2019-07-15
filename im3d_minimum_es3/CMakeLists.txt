@@ -1,4 +1,4 @@
-SET(SUB_NAME im3d_minimum_gl3)
+SET(SUB_NAME im3d_minimum_es3)
 
 FILE(GLOB SRC
     *.cpp
@@ -6,7 +6,6 @@ FILE(GLOB SRC
 ADD_EXECUTABLE(${SUB_NAME}
     ${SRC}
     ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/im3d.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/examples/common/GL/glew.c
     #
     ${CMAKE_CURRENT_LIST_DIR}/../common/im3d_gui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/gl3_renderer.cpp
@@ -14,13 +13,14 @@ ADD_EXECUTABLE(${SUB_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/../common/win32_window.cpp
     )
 TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
-    GLEW_BUILD
-    RENDERER_GLEW
+    RENDERER_ANGLE
     )
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/examples/common # GL/glew.h
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/examples/common # teapot.h
+    $ENV{VCPKG_DIR}/installed/x64-windows/include
     )
 TARGET_LINK_LIBRARIES(${SUB_NAME}
-    OPENGL32
+    $ENV{VCPKG_DIR}/installed/x64-windows/lib/libegl.lib
+    $ENV{VCPKG_DIR}/installed/x64-windows/lib/libGLESv2.lib
     winmm
     )

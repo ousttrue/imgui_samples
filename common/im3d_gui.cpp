@@ -3,9 +3,8 @@
 #include <im3d_math.h>
 #include <plog/Log.h>
 
-#include <GL/glew.h>
-// #define GL_GLEXT_PROTOTYPES
-// #include <GLES3/gl3.h>
+#include "gl_include.h"
+
 
 #include "camera_state.h"
 #include "window_state.h"

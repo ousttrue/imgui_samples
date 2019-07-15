@@ -1,14 +1,16 @@
 #include "gl3_renderer.h"
 #include <array>
 #include <string>
-#include <GL/glew.h>
+
+#include "gl_include.h"
+
 #include "teapot.h"
 
 const std::string g_vs =
-#include "model.vs"
+#include "../shaders/model.vs"
     ;
 const std::string g_fs =
-#include "model.fs"
+#include "../shaders/model.fs"
     ;
 
 GL3Renderer::GL3Renderer()

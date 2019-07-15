@@ -21,6 +21,7 @@
         "RBUTTONDOWN",
         "RBUTTONUP",
         "WNDCLASSEX",
+        "XMINT",
         "amth",
         "glew",
         "imgui",
