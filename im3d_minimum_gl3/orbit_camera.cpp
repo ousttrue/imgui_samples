@@ -71,14 +71,14 @@ void OrbitCamera::CalcView()
         1,
     };
 
-    auto yawPitch = camera::Mult(yaw, pitch);
-    state.view = camera::Mult(yawPitch, t);
+    auto yawPitch = amath::Mult(yaw, pitch);
+    state.view = amath::Mult(yawPitch, t);
 
     t[12] *= -1;
     t[13] *= -1;
     t[14] *= -1;
-    camera::Transpose(yawPitch);
-    state.viewInverse = camera::Mult(t, yawPitch);
+    amath::Transpose(yawPitch);
+    state.viewInverse = amath::Mult(t, yawPitch);
 }
 
 void OrbitCamera::CalcPerspective()
@@ -106,7 +106,7 @@ void OrbitCamera::CalcPerspective()
     state.projection[15] = 0.0f;
 }
 
-void OrbitCamera::SetScreenSize(float w, float h)
+void OrbitCamera::SetViewport(int x, int y, int w, int h)
 {
     if (w == state.viewportWidth && h == state.viewportHeight)
     {
@@ -120,6 +120,8 @@ void OrbitCamera::SetScreenSize(float w, float h)
     {
         aspectRatio = w / (float)h;
     }
+    state.viewportX = x;
+    state.viewportY = y;
     state.viewportWidth = w;
     state.viewportHeight = h;
     CalcPerspective();

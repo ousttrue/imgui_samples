@@ -21,6 +21,7 @@
         "RBUTTONDOWN",
         "RBUTTONUP",
         "WNDCLASSEX",
+        "amath",
         "glew",
         "imgui",
         "lparam",

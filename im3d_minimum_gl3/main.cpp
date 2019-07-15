@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     {
         // camera update
         auto &state = window.GetState();
-        camera.SetScreenSize((float)state.Width, (float)state.Height);
+        camera.SetViewport(0, 0, state.Width, state.Height);
         camera.MouseInput(state.Mouse);
         camera.state.CalcViewProjection();
         auto time = window.GetTimeSeconds();
