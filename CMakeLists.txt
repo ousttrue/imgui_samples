@@ -23,4 +23,5 @@ ADD_COMPILE_OPTIONS(
 SUBDIRS(
     im3d_minimum_gl3
     im3d_minimum_es3
+    im3d_minimum_dx11
     )
