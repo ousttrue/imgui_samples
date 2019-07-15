@@ -19,7 +19,7 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    GL3Renderer renderer;
+    GL3Renderer renderer("#version 300 es");
 
     auto world = amth::IdentityMatrix();
 

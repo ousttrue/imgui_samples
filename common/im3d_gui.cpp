@@ -4,115 +4,14 @@
 #include <plog/Log.h>
 
 #include "gl_include.h"
-
-
 #include "camera_state.h"
 #include "window_state.h"
+#include "gl3_renderer.h"
 
-const std::string g_points_vs =
-#include "../shaders/im3d_points.vs"
+const std::string g_glsl = 
+    #include "../shaders/im3d.glsl"
+// "dependencies/im3d/examples/OpenGL31/im3d.glsl"
     ;
-const std::string g_points_fs =
-#include "../shaders/im3d_points.fs"
-    ;
-
-const std::string g_lines_vs =
-#include "../shaders/im3d_lines.vs"
-    ;
-const std::string g_lines_fs =
-#include "../shaders/im3d_lines.fs"
-    ;
-
-const std::string g_triangles_vs =
-#include "../shaders/im3d_triangles.vs"
-    ;
-const std::string g_triangles_fs =
-#include "../shaders/im3d_triangles.fs"
-    ;
-
-static std::string trim(const std::string &src)
-{
-    auto it = src.begin();
-    for (; it != src.end(); ++it)
-    {
-        if (!isspace(*it))
-        {
-            break;
-        }
-    }
-    return std::string(it, src.end());
-}
-
-static GLuint CompileShader(const std::string &name, GLenum stage, const std::string &src)
-{
-    auto shader = glCreateShader(stage);
-    auto data = static_cast<const GLchar *>(src.data());
-    auto size = static_cast<GLint>(src.size());
-    glShaderSource(shader, 1, &data, &size);
-
-    glCompileShader(shader);
-    auto compileStatus = GL_FALSE;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
-    if (compileStatus == GL_FALSE)
-    {
-        GLint len;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-        std::string log;
-        log.resize(len);
-        glGetShaderInfoLog(shader, len, 0, log.data());
-        LOGE << name << ": " << log;
-        glDeleteShader(shader);
-        return 0;
-    }
-    return shader;
-}
-
-static bool LinkShaderProgram(GLuint _handle)
-{
-    glLinkProgram(_handle);
-    GLint linkStatus = GL_FALSE;
-    glGetProgramiv(_handle, GL_LINK_STATUS, &linkStatus);
-    if (linkStatus == GL_FALSE)
-    {
-        fprintf(stderr, "Error linking program:\n\n");
-        GLint len;
-        glGetProgramiv(_handle, GL_INFO_LOG_LENGTH, &len);
-        GLchar *log = new GLchar[len];
-        glGetProgramInfoLog(_handle, len, 0, log);
-        fprintf(stderr, log);
-        fprintf(stderr, "\n");
-        delete[] log;
-
-        return false;
-    }
-    return true;
-}
-
-unsigned int CreateShader(const std::string &name, const std::string &vsSrc, const std::string &fsSrc)
-{
-    auto vs = CompileShader(name + "@vs", GL_VERTEX_SHADER, trim(vsSrc));
-    if (!vs)
-    {
-        return 0;
-    }
-    auto fs = CompileShader(name + "@fs", GL_FRAGMENT_SHADER, trim(fsSrc));
-    if (!fs)
-    {
-        return 0;
-    }
-
-    auto shTeapot = glCreateProgram();
-    glAttachShader(shTeapot, vs);
-    glAttachShader(shTeapot, fs);
-    bool ret = LinkShaderProgram(shTeapot);
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    if (!ret)
-    {
-        return 0;
-    }
-    return shTeapot;
-}
 
 class Im3dGuiImpl
 {
@@ -129,24 +28,54 @@ public:
         static_assert(sizeof(Im3d::VertexData) % 16 == 0);
 
         // glGetv
-        //     
+        //
 
         GLint value;
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &value);
         LOGI << "GL_MAX_UNIFORM_BLOCK_SIZE: " << value;
 
         {
-            g_Im3dShaderPoints = CreateShader("im3d_point", g_points_vs, g_points_fs);
+            auto vs = GL3ShaderSource(g_glsl, "#version 300 es");
+            vs.Define("VERTEX_SHADER");
+            vs.Define("POINTS");
+            vs.Replace("noperspective", "");
+
+            auto fs = GL3ShaderSource(g_glsl, "#version 300 es");
+            fs.Define("FRAGMENT_SHADER");
+            fs.Define("POINTS");
+            fs.Insert("precision mediump float;\n");
+            fs.Replace("noperspective", "");
+            g_Im3dShaderPoints = CreateShader("im3d_point", vs.GetSource(), fs.GetSource());
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderPoints, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderPoints, blockIndex, 0);
         }
         {
-            g_Im3dShaderLines = CreateShader("im3d_line", g_lines_vs, g_lines_fs);
+            auto vs = GL3ShaderSource(g_glsl, "#version 300 es");
+            vs.Define("VERTEX_SHADER");
+            vs.Define("LINES");
+            vs.Replace("noperspective", "");
+
+            auto fs = GL3ShaderSource(g_glsl, "#version 300 es");
+            fs.Define("FRAGMENT_SHADER");
+            fs.Define("LINES");
+            fs.Insert("precision mediump float;\n");
+            fs.Replace("noperspective", "");
+            g_Im3dShaderLines = CreateShader("im3d_line", vs.GetSource(), fs.GetSource());
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderLines, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderLines, blockIndex, 0);
         }
         {
-            g_Im3dShaderTriangles = CreateShader("im3d_triangle", g_triangles_vs, g_triangles_fs);
+            auto vs = GL3ShaderSource(g_glsl, "#version 300 es");
+            vs.Define("VERTEX_SHADER");
+            vs.Define("TRIANGLES");
+            vs.Replace("noperspective", "");
+
+            auto fs = GL3ShaderSource(g_glsl, "#version 300 es");
+            fs.Define("FRAGMENT_SHADER");
+            fs.Define("TRIANGLES");
+            fs.Insert("precision mediump float;\n");
+            fs.Replace("noperspective", "");
+            g_Im3dShaderTriangles = CreateShader("im3d_triangle", vs.GetSource(), fs.GetSource());
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderTriangles, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderTriangles, blockIndex, 0);
         }

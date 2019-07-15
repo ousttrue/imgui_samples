@@ -1,19 +1,101 @@
 #include "gl3_renderer.h"
 #include <array>
-#include <string>
+#include <sstream>
+#include <fstream>
 
 #include "gl_include.h"
 
 #include "teapot.h"
 
-const std::string g_vs =
-#include "../shaders/model.vs"
-    ;
-const std::string g_fs =
-#include "../shaders/model.fs"
+const std::string g_glsl =
+#include "../shaders/model.glsl"
     ;
 
-GL3Renderer::GL3Renderer()
+static std::string trim(const std::string &src)
+{
+    auto it = src.begin();
+    for (; it != src.end(); ++it)
+    {
+        if (!isspace(*it))
+        {
+            break;
+        }
+    }
+    return std::string(it, src.end());
+}
+
+///
+/// GL3ShaderSource
+///
+GL3ShaderSource::GL3ShaderSource(const std::string &src, const std::string &version)
+    : m_src(trim(src)), m_version(version)
+{
+}
+
+std::vector<std::byte> readall(const std::filesystem::path &path)
+{
+    std::vector<std::byte> buffer;
+    std::ifstream io(path, std::ios::binary);
+    if (io)
+    {
+        io.seekg(0, std::ios::end);
+        buffer.resize(io.tellg());
+        io.seekg(0, std::ios::beg);
+        io.read((char *)buffer.data(), buffer.size());
+    }
+    return buffer;
+}
+
+GL3ShaderSource GL3ShaderSource::FromPath(const std::filesystem::path &path, const std::string &version)
+{
+    auto buffer = readall(path);
+    auto begin = (const char *)buffer.data();
+    return GL3ShaderSource(std::string(begin, begin + buffer.size()), version);
+}
+
+void GL3ShaderSource::Define(const std::string &name)
+{
+    Insert(std::string("#define ") + name + "\n");
+}
+
+void GL3ShaderSource::Replace(const std::string &src, const std::string &dst)
+{
+    std::stringstream ss;
+
+    auto pos = 0;
+    while (pos < m_src.size())
+    {
+        auto found = m_src.find(src, pos);
+        if (found == std::string::npos)
+        {
+            // 残り全部
+            ss << m_src.substr(pos);
+            break;
+        }
+
+        ss << m_src.substr(pos, found - pos);
+        ss << dst;
+        pos = (int)(found + src.size() + 1);
+    }
+
+    m_src = ss.str();
+}
+
+void GL3ShaderSource::Insert(const std::string &src)
+{
+    m_src = src + m_src;
+}
+
+std::string GL3ShaderSource::GetSource() const
+{
+    return m_version + "\n" + m_src;
+}
+
+///
+/// GL3Renderer
+///
+GL3Renderer::GL3Renderer(const std::string &version)
+    : m_version(version)
 {
 }
 
@@ -33,7 +115,7 @@ void GL3Renderer::NewFrame(int screenWidth, int screenHeight)
     glDisable(GL_BLEND);
 }
 
-static GLuint CompileShader(GLenum stage, const std::string &src)
+static GLuint CompileShader(const std::string &debugName, GLenum stage, const std::string &src)
 {
     auto shader = glCreateShader(stage);
     auto data = static_cast<const GLchar *>(src.data());
@@ -45,7 +127,8 @@ static GLuint CompileShader(GLenum stage, const std::string &src)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
     if (compileStatus == GL_FALSE)
     {
-        // fprintf(stderr, "Error compiling '%s':\n\n", _path);
+        fprintf(stderr, "#########\n");
+        fprintf(stderr, "Error compiling '%s':\n\n", debugName.c_str());
         GLint len;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
         char *log = new GLchar[len];
@@ -53,7 +136,7 @@ static GLuint CompileShader(GLenum stage, const std::string &src)
         fprintf(stderr, log);
         delete[] log;
 
-        //fprintf(stderr, "\n\n%s", src.data());
+        fprintf(stderr, "\n\n%s", src.data());
         fprintf(stderr, "\n");
         glDeleteShader(shader);
         return 0;
@@ -82,14 +165,14 @@ static bool LinkShaderProgram(GLuint _handle)
     return true;
 }
 
-unsigned int CreateShader(const std::string &vsSrc, const std::string &fsSrc)
+unsigned int CreateShader(const std::string &debugName, const std::string &vsSrc, const std::string &fsSrc)
 {
-    auto vs = CompileShader(GL_VERTEX_SHADER, vsSrc);
+    auto vs = CompileShader(debugName + "@vs", GL_VERTEX_SHADER, vsSrc);
     if (!vs)
     {
         return 0;
     }
-    auto fs = CompileShader(GL_FRAGMENT_SHADER, fsSrc);
+    auto fs = CompileShader(debugName + "@fs", GL_FRAGMENT_SHADER, fsSrc);
     if (!fs)
     {
         return 0;
@@ -110,13 +193,22 @@ unsigned int CreateShader(const std::string &vsSrc, const std::string &fsSrc)
 
 void GL3Renderer::DrawTeapot(const float *viewProjection, const float *world)
 {
-    static GLuint shTeapot;
-    static GLuint vbTeapot;
-    static GLuint ibTeapot;
-    static GLuint vaTeapot;
+    static GLuint shTeapot = 0;
+    static GLuint vbTeapot = 0;
+    static GLuint ibTeapot = 0;
+    static GLuint vaTeapot = 0;
     if (shTeapot == 0)
     {
-        shTeapot = CreateShader(g_vs, g_fs);
+        auto vs = GL3ShaderSource(g_glsl, m_version);
+        vs.Define("VERTEX_SHADER");
+        vs.Replace("noperspective", "");
+
+        auto fs = GL3ShaderSource(g_glsl, m_version);
+        fs.Define("FRAGMENT_SHADER");
+        fs.Insert("precision mediump float;\n");
+        fs.Replace("noperspective", "");
+
+        shTeapot = CreateShader("model.glsl", vs.GetSource(), fs.GetSource());
         glGenBuffers(1, &vbTeapot);
         glGenBuffers(1, &ibTeapot);
         glGenVertexArrays(1, &vaTeapot);
