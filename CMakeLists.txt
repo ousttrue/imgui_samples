@@ -25,5 +25,5 @@ ADD_COMPILE_OPTIONS(
 SUBDIRS(
     common
     glew
-    im3d_minimum
+    im3d_minimum_gl3
     )

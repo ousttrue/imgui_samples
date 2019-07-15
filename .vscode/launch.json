@@ -8,7 +8,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/im3d_minimum/im3d_minimum.exe",
+            "program": "${workspaceFolder}/build/im3d_minimum_gl3/im3d_minimum_gl3.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

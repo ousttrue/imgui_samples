@@ -1,4 +1,4 @@
-SET(SUB_NAME im3d_minimum)
+SET(SUB_NAME im3d_minimum_gl3)
 
 FILE(GLOB SRC
     *.cpp

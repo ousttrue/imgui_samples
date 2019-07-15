@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
     Win32Window window;
-    if (!window.Create(640, 480, L"im3d_minimum"))
+    if (!window.Create(640, 480, L"im3d_minimum_gl3"))
     {
         return 1;
     }
