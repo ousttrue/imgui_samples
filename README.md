@@ -4,7 +4,10 @@ IMGUI の練習
 
 ## dependencies
 
-* im3d
+* https://github.com/john-chapman/im3d
+  * glew
+* https://github.com/nlohmann/json
+* https://github.com/SergiusTheBest/plog
 
 ## im3d_minimum
 
