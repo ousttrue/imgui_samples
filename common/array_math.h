@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 
-namespace amath
+namespace amth
 {
 inline float dot(const float *row, const float *col)
 {

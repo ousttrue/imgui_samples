@@ -71,14 +71,14 @@ void OrbitCamera::CalcView()
         1,
     };
 
-    auto yawPitch = amath::Mult(yaw, pitch);
-    state.view = amath::Mult(yawPitch, t);
+    auto yawPitch = amth::Mult(yaw, pitch);
+    state.view = amth::Mult(yawPitch, t);
 
     t[12] *= -1;
     t[13] *= -1;
     t[14] *= -1;
-    amath::Transpose(yawPitch);
-    state.viewInverse = amath::Mult(t, yawPitch);
+    amth::Transpose(yawPitch);
+    state.viewInverse = amth::Mult(t, yawPitch);
 }
 
 void OrbitCamera::CalcPerspective()
