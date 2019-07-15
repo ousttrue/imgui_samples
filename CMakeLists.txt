@@ -22,6 +22,5 @@ ADD_COMPILE_OPTIONS(
 
 SUBDIRS(
     glew
-    im3d
     im3d_minimum
     )
