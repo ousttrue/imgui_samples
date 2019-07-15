@@ -1,6 +1,7 @@
 #include "shader_source.h"
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 static std::string trim(const std::string &src)
 {

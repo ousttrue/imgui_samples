@@ -53,10 +53,10 @@ int main(int argc, char **argv)
         lastTime = time;
 
         // render
-        renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
+        auto deviceContext = renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
         gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
         gizmo.Manipulate(world.data());                                        // process gizmo, not draw, build draw list.
-        renderer.DrawTeapot(camera.state.viewProjection.data(), world.data()); // use manipulated world
+        renderer.DrawTeapot(deviceContext, camera.state.viewProjection.data(), world.data()); // use manipulated world
         gizmo.Draw(camera.state.viewProjection.data());                        // draw gizmo
 
         // transfer backbuffer

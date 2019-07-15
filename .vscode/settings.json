@@ -25,6 +25,7 @@
         "XMINT",
         "amth",
         "glew",
+        "hlsl",
         "imgui",
         "lparam",
         "mediump",
