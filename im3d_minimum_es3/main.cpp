@@ -21,27 +21,7 @@ int main(int argc, char **argv)
 
     GL3Renderer renderer;
 
-    float world[] = {
-        1,
-        0,
-        0,
-        0,
-
-        0,
-        1,
-        0,
-        0,
-
-        0,
-        0,
-        1,
-        0,
-
-        0,
-        0,
-        0,
-        1,
-    };
+    auto world = amth::IdentityMatrix();
 
     OrbitCamera camera;
 
@@ -70,8 +50,8 @@ int main(int argc, char **argv)
         // render
         renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
         gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
-        gizmo.Manipulate(world); // process gizmo, not draw, build draw list.
-        renderer.DrawTeapot(camera.state.viewProjection.data(), world); // use manipulated world
+        gizmo.Manipulate(world.data()); // process gizmo, not draw, build draw list.
+        renderer.DrawTeapot(camera.state.viewProjection.data(), world.data()); // use manipulated world
         gizmo.Draw(camera.state.viewProjection.data()); // draw gizmo
 
         // transfer backbuffer

@@ -64,4 +64,15 @@ inline void Transpose(std::array<float, 16> &m)
     std::swap(m[7], m[13]);
     std::swap(m[11], m[14]);
 }
-} // namespace array_math
+
+inline std::array<float, 16> IdentityMatrix()
+{
+    return std::array<float, 16>{
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    };
+}
+
+} // namespace amth
