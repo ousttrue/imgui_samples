@@ -1,2 +1,5 @@
 /build/
-/im3d_minimum.json
+/im3d_minimum_gl3.json
+/im3d_minimum_es3.json
+/im3d_minimum_dx11.json
+
