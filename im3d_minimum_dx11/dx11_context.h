@@ -7,6 +7,6 @@ class DX11Context
 public:
     DX11Context();
     ~DX11Context();
-    bool Create(void *hwnd);
+    void* Create(void *hwnd);
     void Present();
 };

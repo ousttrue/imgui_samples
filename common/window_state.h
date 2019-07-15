@@ -29,7 +29,6 @@ struct MouseState
 
 struct WindowState
 {
-    void *Handle;
     int Width;
     int Height;
     MouseState Mouse;

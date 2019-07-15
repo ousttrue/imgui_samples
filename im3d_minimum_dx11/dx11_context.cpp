@@ -1,17 +1,20 @@
 #include "dx11_context.h"
 #include <d3d11.h>
 #include <stdio.h>
+#include <wrl/client.h> // ComPtr
+
+using namespace Microsoft::WRL;
 
 class DX11ContextImpl
 {
-    ID3D11Device *m_d3dDevice = nullptr;
-    ID3D11DeviceContext *m_d3dDeviceCtx = nullptr;
-    IDXGISwapChain *m_dxgiSwapChain = nullptr;
-    ID3D11RenderTargetView *m_d3dRenderTarget = nullptr;
-    ID3D11DepthStencilView *m_d3dDepthStencil = nullptr;
+    ComPtr<ID3D11Device> m_d3dDevice;
+    ComPtr<ID3D11DeviceContext> m_d3dDeviceCtx;
+    ComPtr<IDXGISwapChain> m_dxgiSwapChain;
+    ComPtr<ID3D11RenderTargetView> m_d3dRenderTarget;
+    ComPtr<ID3D11DepthStencilView> m_d3dDepthStencil;
 
 public:
-    bool Create(HWND hWnd)
+    ID3D11Device *Create(HWND hWnd)
     {
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {0};
         swapChainDesc.OutputWindow = hWnd;
@@ -46,9 +49,13 @@ public:
                 &m_d3dDeviceCtx)))
         {
             fprintf(stderr, "Error initializing DirectX");
-            return false;
+            return nullptr;
         }
 
+        return m_d3dDevice.Get();
+    }
+
+#if 0
         ID3D11Texture2D *backBuffer;
         if (FAILED(m_dxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&backBuffer)))
         {
@@ -88,6 +95,7 @@ public:
 
         return true;
     }
+#endif
 
     void Present()
     {
@@ -105,7 +113,7 @@ DX11Context::~DX11Context()
     delete m_impl;
 }
 
-bool DX11Context::Create(void *hwnd)
+void *DX11Context::Create(void *hwnd)
 {
     return m_impl->Create((HWND)hwnd);
 }

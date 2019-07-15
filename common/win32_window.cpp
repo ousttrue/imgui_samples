@@ -37,7 +37,6 @@ public:
     Win32WindowImpl(HWND hWnd, const std::wstring &name)
     {
         m_configName = name + L".json";
-        m_state.Handle = hWnd;
         assert(g_window == nullptr);
         g_window = this;
 
@@ -206,7 +205,7 @@ Win32Window::~Win32Window()
     }
 }
 
-bool Win32Window::Create(int w, int h, const wchar_t *title)
+void* Win32Window::Create(int w, int h, const wchar_t *title)
 {
     auto hInstance = GetModuleHandle(0);
     auto wndClass = GetOrRegisterWindowClass(hInstance, L"Win32WindowImpl");
@@ -223,14 +222,14 @@ bool Win32Window::Create(int w, int h, const wchar_t *title)
         this);
     if (hWnd == NULL)
     {
-        return false;
+        return nullptr;
     }
     m_impl = new Win32WindowImpl(hWnd, title);
     // ShowWindow(hWnd, SW_SHOW);
 
     windowplacement::Restore(hWnd, SW_SHOWNORMAL, m_impl->m_configName.c_str());
 
-    return true;
+    return hWnd;
 }
 
 bool Win32Window::IsRunning()

@@ -14,7 +14,7 @@ class Win32Window
 public:
     Win32Window();
     ~Win32Window();
-    bool Create(int w, int h, const wchar_t *title);
+    void* Create(int w, int h, const wchar_t *title);
     bool IsRunning();
     const WindowState &GetState() const;
     float GetTimeSeconds() const;

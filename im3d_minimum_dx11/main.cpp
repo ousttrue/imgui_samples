@@ -7,27 +7,32 @@
 int main(int argc, char **argv)
 {
     Win32Window window;
-    if (!window.Create(640, 480, L"im3d_minimum_es3"))
+    auto hwnd = window.Create(640, 480, L"im3d_minimum_dx11");
+    if (!hwnd)
     {
         return 1;
     }
-    auto hwnd = window.GetState().Handle;
 
     DX11Context dx11;
-    if (!dx11.Create(hwnd))
+    auto device = dx11.Create(hwnd);
+    if (!device)
     {
         return 2;
     }
 
     DX11Renderer renderer;
+    if(renderer.Create(device)){
+        return 3;
+    }
 
     auto world = amth::IdentityMatrix();
 
     OrbitCamera camera;
 
     Im3dGui gizmo;
-    if(!gizmo.Initialize()){
-        return 3;
+    if (!gizmo.Initialize())
+    {
+        return 4;
     }
 
     float lastTime = 0;
@@ -50,9 +55,9 @@ int main(int argc, char **argv)
         // render
         renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
         gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
-        gizmo.Manipulate(world.data()); // process gizmo, not draw, build draw list.
+        gizmo.Manipulate(world.data());                                        // process gizmo, not draw, build draw list.
         renderer.DrawTeapot(camera.state.viewProjection.data(), world.data()); // use manipulated world
-        gizmo.Draw(camera.state.viewProjection.data()); // draw gizmo
+        gizmo.Draw(camera.state.viewProjection.data());                        // draw gizmo
 
         // transfer backbuffer
         dx11.Present();

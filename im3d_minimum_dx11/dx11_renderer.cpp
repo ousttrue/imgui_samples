@@ -1,50 +1,44 @@
 #include "dx11_renderer.h"
+#include "shader_source.h"
+#include <string>
 #include <d3d11.h>
+#include <d3dcompiler.h>
+#include <wrl/client.h> // ComPtr
+#include <plog/Log.h>
+
+const std::string g_hlsl =
+    #include "../shaders/im3d.hlsl"
+    ;
+
+using namespace Microsoft::WRL;
+
+ComPtr<ID3DBlob> LoadCompileShader(const std::string &target, const std::string &src)
+{
+    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+
+    ComPtr<ID3DBlob> ret;
+    ComPtr<ID3DBlob> err;
+    if (FAILED(D3DCompile(src.data(), src.size(), nullptr, nullptr, nullptr, "main", target.c_str(), flags, 0, &ret, &err)))
+    {
+        LOGE << (char *)err->GetBufferPointer();
+        return nullptr;
+    }
+    return ret;
+}
 
 class DX11RendererImpl
 {
-    struct D3DShader
+
+public:
+    bool Create(ID3D11Device *device)
     {
-        ID3DBlob *m_vsBlob = nullptr;
-        ID3D11VertexShader *m_vs = nullptr;
-        ID3DBlob *m_gsBlob = nullptr;
-        ID3D11GeometryShader *m_gs = nullptr;
-        ID3DBlob *m_psBlob = nullptr;
-        ID3D11PixelShader *m_ps = nullptr;
-
-        void Release()
-        {
-            if (m_vsBlob)
-                m_vsBlob->Release();
-            if (m_vs)
-                m_vs->Release();
-            if (m_gsBlob)
-                m_gsBlob->Release();
-            if (m_gs)
-                m_gs->Release();
-            if (m_psBlob)
-                m_psBlob->Release();
-            if (m_ps)
-                m_ps->Release();
-        }
-    };
-
-    D3DShader g_Im3dShaderPoints;
-    D3DShader g_Im3dShaderLines;
-    D3DShader g_Im3dShaderTriangles;
-    ID3D11InputLayout *g_Im3dInputLayout = nullptr;
-    ID3D11RasterizerState *g_Im3dRasterizerState = nullptr;
-    ID3D11BlendState *g_Im3dBlendState = nullptr;
-    ID3D11DepthStencilState *g_Im3dDepthStencilState = nullptr;
-    ID3D11Buffer *g_Im3dConstantBuffer = nullptr;
-    ID3D11Buffer *g_Im3dVertexBuffer = nullptr;
-
+            return true;
+    }
 };
 
 DX11Renderer::DX11Renderer()
-: m_impl(new DX11RendererImpl)
+    : m_impl(new DX11RendererImpl)
 {
-
 }
 
 DX11Renderer::~DX11Renderer()
@@ -52,12 +46,15 @@ DX11Renderer::~DX11Renderer()
     delete m_impl;
 }
 
+bool DX11Renderer::Create(void *device)
+{
+    return m_impl->Create((ID3D11Device *)device);
+}
+
 void DX11Renderer::NewFrame(int screenWidth, int screenHeight)
 {
-
 }
 
 void DX11Renderer::DrawTeapot(const float *viewProjection, const float *world)
 {
-
 }
