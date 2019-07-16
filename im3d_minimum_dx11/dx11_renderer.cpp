@@ -1,26 +1,29 @@
 #include "dx11_renderer.h"
-#include "shader_source.h"
+#include "teapot.h"
 #include <string>
+#include <array>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <wrl/client.h> // ComPtr
 #include <plog/Log.h>
 
 const std::string g_hlsl =
-#include "../shaders/im3d.hlsl"
+#include "../shaders/model.hlsl"
     ;
 
 using namespace Microsoft::WRL;
 
-ComPtr<ID3DBlob> LoadCompileShader(const std::string &target, const std::string &src)
+ComPtr<ID3DBlob> LoadCompileShader(const std::string &src, const char *name, const D3D_SHADER_MACRO *define, const char *target)
 {
     UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
 
     ComPtr<ID3DBlob> ret;
     ComPtr<ID3DBlob> err;
-    if (FAILED(D3DCompile(src.data(), src.size(), nullptr, nullptr, nullptr, "main", target.c_str(), flags, 0, &ret, &err)))
+    if (FAILED(D3DCompile(src.data(), src.size(), name, define, nullptr, "main", target, flags, 0, &ret, &err)))
     {
-        LOGE << (char *)err->GetBufferPointer();
+        auto error = (char *)err->GetBufferPointer();
+        LOGE << name << ": " << error;
+        LOGE << src;
         return nullptr;
     }
     return ret;
@@ -46,16 +49,12 @@ DX11Renderer::~DX11Renderer()
     delete m_impl;
 }
 
-bool DX11Renderer::Create(void *device)
+struct ConstantBuffer
 {
-    return m_impl->Create((ID3D11Device *)device);
-}
-
-void* DX11Renderer::NewFrame(int screenWidth, int screenHeight)
-{
-    // setup backbuffer
-    return nullptr;
-}
+    std::array<float, 16> World;
+    std::array<float, 16> ViewProjection;
+};
+static_assert(sizeof(ConstantBuffer) == sizeof(float) * 16 * 2);
 
 void DX11Renderer::DrawTeapot(void *deviceContext, const float *viewProjection, const float *world)
 {
@@ -72,57 +71,133 @@ void DX11Renderer::DrawTeapot(void *deviceContext, const float *viewProjection, 
     ctx->GetDevice(&d3d);
     if (!s_vs)
     {
-        auto vs = ShaderSource(g_hlsl);
-        vs.Define("VERTEX_SHADER");
-        auto vsBlob = LoadCompileShader("vs_4_0", vs.GetSource());
+        D3D_SHADER_MACRO vsMacro[] =
+            {
+                {
+                    .Name = "VERTEX_SHADER",
+                    .Definition = "1",
+                },
+                {0}};
+        auto vsBlob = LoadCompileShader(g_hlsl, "model.hlsl@vs", vsMacro, "vs_4_0");
+        if (!vsBlob)
+        {
+            return;
+        }
         if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &s_vs)))
         {
             return;
         }
 
-        auto ps = ShaderSource(g_hlsl);
-        ps.Define("PIXEL_SHADER");
-        auto psBlob = LoadCompileShader("ps_4_0", ps.GetSource());
+        // create layout for vs
+        D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
+            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+            {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}};
+        if (FAILED(d3d->CreateInputLayout(inputDesc, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &s_inputLayout)))
+        {
+            return;
+        }
+
+        D3D_SHADER_MACRO psMacro[] =
+            {
+                {
+                    .Name = "PIXEL_SHADER",
+                    .Definition = "1",
+                },
+                {0}};
+        auto psBlob = LoadCompileShader(g_hlsl, "model.hlsl@ps", psMacro, "ps_4_0");
+        if (!psBlob)
+        {
+            return;
+        }
         if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &s_ps)))
         {
             return;
         }
 
-        // s_vb = CreateVertexBuffer(sizeof(s_teapotVertices), D3D11_USAGE_IMMUTABLE, s_teapotVertices);
-        // s_ib = CreateIndexBuffer(sizeof(s_teapotIndices), D3D11_USAGE_IMMUTABLE, s_teapotIndices);
+        {
+            D3D11_BUFFER_DESC desc = {0};
+            desc.ByteWidth = sizeof(s_teapotVertices);
+            desc.Usage = D3D11_USAGE_IMMUTABLE;
+            desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-        // D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
-        //     {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        //     {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}};
-        // dxAssert(d3d->CreateInputLayout(inputDesc, 2, s_vsBlob->GetBufferPointer(), s_vsBlob->GetBufferSize(), &s_inputLayout));
+            D3D11_SUBRESOURCE_DATA subRes = {0};
+            subRes.pSysMem = s_teapotVertices;
+            if (FAILED(d3d->CreateBuffer(&desc, &subRes, &s_vb)))
+            {
+                return;
+            }
+        }
 
-        // s_cb = CreateConstantBuffer(sizeof(Mat4) * 2, D3D11_USAGE_DYNAMIC);
+        {
+            D3D11_BUFFER_DESC desc = {0};
+            desc.ByteWidth = sizeof(s_teapotIndices);
+            desc.Usage = D3D11_USAGE_IMMUTABLE;
+            desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-        // D3D11_RASTERIZER_DESC rasterizerDesc = {};
-        // rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-        // rasterizerDesc.CullMode = D3D11_CULL_BACK;
-        // rasterizerDesc.FrontCounterClockwise = true;
-        // dxAssert(d3d->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
+            D3D11_SUBRESOURCE_DATA subRes = {0};
+            subRes.pSysMem = s_teapotIndices;
+            if (FAILED(d3d->CreateBuffer(&desc, &subRes, &s_ib)))
+            {
+                return;
+            }
+        }
+
+        {
+            D3D11_BUFFER_DESC desc = {};
+            desc.ByteWidth = sizeof(float) * 16 * 2;
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            // desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+            if (FAILED(d3d->CreateBuffer(&desc, nullptr, &s_cb)))
+            {
+                return;
+            }
+        }
+
+        D3D11_RASTERIZER_DESC rasterizerDesc = {0};
+        rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+        rasterizerDesc.CullMode = D3D11_CULL_BACK;
+        rasterizerDesc.FrontCounterClockwise = true;
+        if (FAILED(d3d->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState)))
+        {
+            return;
+        }
     }
 
-    // Mat4 *cbData = (Mat4 *)MapBuffer(s_cb, D3D11_MAP_WRITE_DISCARD);
-    // cbData[0] = _world;
-    // cbData[1] = _viewProj;
-    // UnmapBuffer(s_cb);
+    static std::array<float, 16> identity = {
+        1.0f, 0, 0, 0,
+        0, 1.0f, 0, 0,
+        0, 0, 1.0f, 0,
+        0, 0, 0, 1.0f};
 
-    // unsigned int stride = 4 * 3 * 2;
-    // unsigned int offset = 0;
-    // ctx->IASetInputLayout(s_inputLayout);
-    // ctx->IASetVertexBuffers(0, 1, &s_vb, &stride, &offset);
-    // ctx->IASetIndexBuffer(s_ib, DXGI_FORMAT_R32_UINT, 0);
-    // ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    // ctx->VSSetShader(s_vs, nullptr, 0);
-    // ctx->VSSetConstantBuffers(0, 1, &s_cb);
-    // ctx->PSSetShader(s_ps, nullptr, 0);
+    ConstantBuffer data{
+        .World = *(const std::array<float, 16> *)world,
+        // .World = identity,
+        .ViewProjection = *(const std::array<float, 16> *)viewProjection,
+        // .ViewProjection = identity,
+    };
+    ctx->UpdateSubresource(s_cb.Get(), 0, nullptr, &data, 0, 0);
 
-    // ctx->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-    // ctx->OMSetDepthStencilState(nullptr, 0);
-    // ctx->RSSetState(s_rasterizerState);
+    unsigned int stride = 4 * 3 * 2;
+    unsigned int offset = 0;
+    ctx->IASetInputLayout(s_inputLayout.Get());
+    ID3D11Buffer *vb_list[] =
+        {
+            s_vb.Get()};
+    ctx->IASetVertexBuffers(0, 1, vb_list, &stride, &offset);
+    ctx->IASetIndexBuffer(s_ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+    ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    ctx->VSSetShader(s_vs.Get(), nullptr, 0);
+    ID3D11Buffer *cb_list[] =
+        {
+            s_cb.Get()};
+    ctx->VSSetConstantBuffers(0, 1, cb_list);
+    ctx->PSSetShader(s_ps.Get(), nullptr, 0);
 
-    // ctx->DrawIndexed(sizeof(s_teapotIndices) / sizeof(unsigned), 0, 0);
+    ctx->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    ctx->OMSetDepthStencilState(nullptr, 0);
+    ctx->RSSetState(s_rasterizerState.Get());
+
+    ctx->DrawIndexed(sizeof(s_teapotIndices) / sizeof(unsigned), 0, 0);
 }

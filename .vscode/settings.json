@@ -24,6 +24,7 @@
         "WNDCLASSEX",
         "XMINT",
         "amth",
+        "countof",
         "glew",
         "hlsl",
         "imgui",

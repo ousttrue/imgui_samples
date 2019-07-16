@@ -81,10 +81,16 @@ void OrbitCamera::CalcView()
     state.viewInverse = amth::Mult(t, yawPitch);
 }
 
+static double cot(double value)
+{
+    return 1.0f / tan(value);
+}
+
 void OrbitCamera::CalcPerspective()
 {
-    const float f = static_cast<float>(1.0f / tan(state.fovYRadians / 2.0));
 
+#ifdef OPENGL
+    const float f = static_cast<float>(1.0f / tan(state.fovYRadians / 2.0));
     state.projection[0] = f / aspectRatio;
     state.projection[1] = 0.0f;
     state.projection[2] = 0.0f;
@@ -104,6 +110,29 @@ void OrbitCamera::CalcPerspective()
     state.projection[13] = 0.0f;
     state.projection[14] = (2 * zFar * zNear) / (zNear - zFar);
     state.projection[15] = 0.0f;
+#else
+    auto yScale = (float)cot(state.fovYRadians / 2);
+    auto xScale = yScale / aspectRatio;
+    state.projection[0] = xScale;
+    state.projection[1] = 0.0f;
+    state.projection[2] = 0.0f;
+    state.projection[3] = 0.0f;
+
+    state.projection[4] = 0.0f;
+    state.projection[5] = yScale;
+    state.projection[6] = 0.0f;
+    state.projection[7] = 0.0f;
+
+    state.projection[8] = 0.0f;
+    state.projection[9] = 0.0f;
+    state.projection[10] = zFar / (zNear - zFar);
+    state.projection[11] = -1;
+
+    state.projection[12] = 0.0f;
+    state.projection[13] = 0.0f;
+    state.projection[14] = (zFar * zNear) / (zNear - zFar);
+    state.projection[15] = 0.0f;
+#endif
 }
 
 void OrbitCamera::SetViewport(int x, int y, int w, int h)

@@ -8,5 +8,9 @@ public:
     DX11Context();
     ~DX11Context();
     void* Create(void *hwnd);
+
+    // Get I3D11DeviceContext that has backbuffer
+    void* NewFrame(int windowWidth, int windowHeight);
+
     void Present();
 };

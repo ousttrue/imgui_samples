@@ -3,9 +3,14 @@
 #include "dx11_renderer.h"
 #include "orbit_camera.h"
 #include "im3d_gui.h"
+#include <plog/Log.h>
+#include <plog/Appenders/DebugOutputAppender.h>
 
 int main(int argc, char **argv)
 {
+    static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
+    plog::init(plog::verbose, &debugOutputAppender);
+
     Win32Window window;
     auto hwnd = window.Create(640, 480, L"im3d_minimum_dx11");
     if (!hwnd)
@@ -21,9 +26,6 @@ int main(int argc, char **argv)
     }
 
     DX11Renderer renderer;
-    if(renderer.Create(device)){
-        return 3;
-    }
 
     auto world = amth::IdentityMatrix();
 
@@ -53,11 +55,11 @@ int main(int argc, char **argv)
         lastTime = time;
 
         // render
-        auto deviceContext = renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
-        gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
-        gizmo.Manipulate(world.data());                                        // process gizmo, not draw, build draw list.
+        auto deviceContext = dx11.NewFrame(state.Width, state.Height); // setViewPort & clear background
+        // gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
+        // gizmo.Manipulate(world.data());                                                       // process gizmo, not draw, build draw list.
         renderer.DrawTeapot(deviceContext, camera.state.viewProjection.data(), world.data()); // use manipulated world
-        gizmo.Draw(camera.state.viewProjection.data());                        // draw gizmo
+        // gizmo.Draw(camera.state.viewProjection.data());                                       // draw gizmo
 
         // transfer backbuffer
         dx11.Present();

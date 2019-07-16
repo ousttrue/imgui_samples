@@ -2,24 +2,27 @@
 #include <d3d11.h>
 #include <stdio.h>
 #include <wrl/client.h> // ComPtr
+#include <plog/Log.h>
 
 using namespace Microsoft::WRL;
 
 class DX11ContextImpl
 {
-    ComPtr<ID3D11Device> m_d3dDevice;
-    ComPtr<ID3D11DeviceContext> m_d3dDeviceCtx;
-    ComPtr<IDXGISwapChain> m_dxgiSwapChain;
-    ComPtr<ID3D11RenderTargetView> m_d3dRenderTarget;
-    ComPtr<ID3D11DepthStencilView> m_d3dDepthStencil;
+    ComPtr<ID3D11Device> m_device;
+    ComPtr<ID3D11DeviceContext> m_context;
+    ComPtr<IDXGISwapChain> m_swapchain;
+
+    ComPtr<ID3D11RenderTargetView> m_rtv;
+    ComPtr<ID3D11DepthStencilView> m_dsv;
 
 public:
+    // create device and swapchain
     ID3D11Device *Create(HWND hWnd)
     {
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {0};
         swapChainDesc.OutputWindow = hWnd;
         swapChainDesc.Windowed = TRUE;
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapChainDesc.BufferCount = 2;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -29,9 +32,12 @@ public:
         swapChainDesc.SampleDesc.Count = 1;
 
         UINT createDeviceFlags = 0;
-        //createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#if _DEBUG
+        createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
         D3D_FEATURE_LEVEL featureLevel;
-        const D3D_FEATURE_LEVEL featureLevelArray[1] = {
+        const D3D_FEATURE_LEVEL featureLevelArray[] = {
             D3D_FEATURE_LEVEL_11_0,
         };
         if (FAILED(D3D11CreateDeviceAndSwapChain(
@@ -43,63 +49,113 @@ public:
                 1,
                 D3D11_SDK_VERSION,
                 &swapChainDesc,
-                &m_dxgiSwapChain,
-                &m_d3dDevice,
+                &m_swapchain,
+                &m_device,
                 &featureLevel,
-                &m_d3dDeviceCtx)))
+                &m_context)))
         {
-            fprintf(stderr, "Error initializing DirectX");
+            LOGE << "Error initializing DirectX";
             return nullptr;
         }
 
-        return m_d3dDevice.Get();
+        DXGI_SWAP_CHAIN_DESC desc;
+        m_swapchain->GetDesc(&desc);
+        m_width = desc.BufferDesc.Width;
+        m_height = desc.BufferDesc.Height;
+
+        return m_device.Get();
     }
 
-#if 0
-        ID3D11Texture2D *backBuffer;
-        if (FAILED(m_dxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&backBuffer)))
-        {
-            return false;
-        }
-        D3D11_TEXTURE2D_DESC backBufferDesc;
-        backBuffer->GetDesc(&backBufferDesc);
+    int m_width = 0;
+    int m_height = 0;
 
-        if (FAILED(m_d3dDevice->CreateRenderTargetView(backBuffer, nullptr, &m_d3dRenderTarget)))
+    ID3D11DeviceContext *NewFrame(int width, int height)
+    {
+        if (width != m_width || height != m_height)
         {
-            return false;
-        }
+            m_rtv.Reset();
+            m_dsv.Reset();
+            // clear
+            m_context->OMSetRenderTargets(0, nullptr, nullptr);
+            // resize swapchain
+            DXGI_SWAP_CHAIN_DESC desc;
+            m_swapchain->GetDesc(&desc);
+            m_swapchain->ResizeBuffers(desc.BufferCount, width, height, desc.BufferDesc.Format, desc.Flags);
 
-        D3D11_TEXTURE2D_DESC txDesc = {0};
-        txDesc.Width = backBufferDesc.Width;
-        txDesc.Height = backBufferDesc.Height;
-        txDesc.MipLevels = 1;
-        txDesc.ArraySize = 1;
-        txDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        txDesc.SampleDesc.Count = 1;
-        txDesc.Usage = D3D11_USAGE_DEFAULT;
-        txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-        ID3D11Texture2D *tx = nullptr;
-        if (FAILED(m_d3dDevice->CreateTexture2D(&txDesc, nullptr, &tx)))
-        {
-            return false;
+            m_width = width;
+            m_height = height;
         }
 
-        ID3D11DepthStencilView *ret;
-        if (FAILED(m_d3dDevice->CreateDepthStencilView(tx, nullptr, &ret)))
+        if (!m_rtv)
         {
-            return false;
+            // get backbuffer
+            ComPtr<ID3D11Texture2D> backBuffer;
+            if (FAILED(m_swapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))))
+            {
+                // fatal
+                LOGE << "fail to get backbuffer";
+                return nullptr;
+            }
+            D3D11_TEXTURE2D_DESC backBufferDesc;
+            backBuffer->GetDesc(&backBufferDesc);
+
+            // create RtV
+            if (FAILED(m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_rtv)))
+            {
+                return false;
+            }
+
+            // create depthbuffer
+            D3D11_TEXTURE2D_DESC depthDesc = {0};
+            depthDesc.Width = backBufferDesc.Width;
+            depthDesc.Height = backBufferDesc.Height;
+            depthDesc.MipLevels = 1;
+            depthDesc.ArraySize = 1;
+            depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+            depthDesc.SampleDesc.Count = 1;
+            depthDesc.Usage = D3D11_USAGE_DEFAULT;
+            depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+            ComPtr<ID3D11Texture2D> depthBuffer;
+            if (FAILED(m_device->CreateTexture2D(&depthDesc, nullptr, &depthBuffer)))
+            {
+                return false;
+            }
+
+            // create dsv
+            if (FAILED(m_device->CreateDepthStencilView(depthBuffer.Get(), nullptr, &m_dsv)))
+            {
+                return false;
+            }
         }
 
-        m_d3dDeviceCtx->OMSetRenderTargets(1, &m_d3dRenderTarget, m_d3dDepthStencil);
-        backBuffer->Release();
+        // clear
+        float clear[] = {0.2f, 0.1f, 0.0f, 0.0f};
+        m_context->ClearRenderTargetView(m_rtv.Get(), clear);
+        m_context->ClearDepthStencilView(m_dsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0xff);
 
-        return true;
+        // set backbuffer & depthbuffer
+        ID3D11RenderTargetView *rtv_list[] = {
+            m_rtv.Get()};
+        m_context->OMSetRenderTargets(1, rtv_list, m_dsv.Get());
+        D3D11_VIEWPORT viewports[] =
+            {
+                {
+                    .TopLeftX = 0,
+                    .TopLeftY = 0,
+                    .Width = (float)m_width,
+                    .Height = (float)m_height,
+                    .MinDepth = 0,
+                    .MaxDepth = 1.0f,
+                },
+            };
+        m_context->RSSetViewports(_countof(viewports), viewports);
+
+        return m_context.Get();
     }
-#endif
 
     void Present()
     {
-        m_dxgiSwapChain->Present(0, 0);
+        m_swapchain->Present(0, 0);
     }
 };
 
@@ -116,6 +172,11 @@ DX11Context::~DX11Context()
 void *DX11Context::Create(void *hwnd)
 {
     return m_impl->Create((HWND)hwnd);
+}
+
+void *DX11Context::NewFrame(int width, int height)
+{
+    return m_impl->NewFrame(width, height);
 }
 
 void DX11Context::Present()

@@ -1,3 +1,4 @@
+R""(
 struct VS_OUTPUT
 {
 	linear        float4 m_position     : SV_POSITION;
@@ -35,3 +36,4 @@ struct VS_OUTPUT
 		return float4(ndotl, ndotl, ndotl, 1.0);
 	}
 #endif
+)""
