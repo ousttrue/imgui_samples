@@ -10,7 +10,7 @@ ADD_EXECUTABLE(${SUB_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/../common/orbit_camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/win32_window.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/shader_source.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/../common/im3d_dx11.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../common/im3d_gui.cpp
     )
 TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
     )

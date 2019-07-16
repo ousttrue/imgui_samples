@@ -129,7 +129,7 @@ public:
         }
 
         // clear
-        float clear[] = {0.2f, 0.1f, 0.0f, 0.0f};
+        float clear[] = {0.3f, 0.3f, 0.3f, 0.0f};
         m_context->ClearRenderTargetView(m_rtv.Get(), clear);
         m_context->ClearDepthStencilView(m_dsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0xff);
 
@@ -159,6 +159,7 @@ public:
     }
 };
 
+//////////////////////////////////////////////////////////////////////////////
 DX11Context::DX11Context()
     : m_impl(new DX11ContextImpl)
 {

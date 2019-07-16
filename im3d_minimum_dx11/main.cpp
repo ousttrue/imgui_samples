@@ -1,8 +1,10 @@
 #include "win32_window.h"
 #include "dx11_context.h"
 #include "dx11_renderer.h"
+#include "dx11_im3d.h"
 #include "orbit_camera.h"
 #include "im3d_gui.h"
+#include <im3d.h>
 #include <plog/Log.h>
 #include <plog/Appenders/DebugOutputAppender.h>
 
@@ -27,15 +29,11 @@ int main(int argc, char **argv)
 
     DX11Renderer renderer;
 
+    DX11Im3d dx11im3d;
+
     auto world = amth::IdentityMatrix();
 
     OrbitCamera camera;
-
-    Im3dGui gizmo;
-    if (!gizmo.Initialize())
-    {
-        return 4;
-    }
 
     float lastTime = 0;
 
@@ -56,10 +54,18 @@ int main(int argc, char **argv)
 
         // render
         auto deviceContext = dx11.NewFrame(state.Width, state.Height); // setViewPort & clear background
-        // gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
-        // gizmo.Manipulate(world.data());                                                       // process gizmo, not draw, build draw list.
-        renderer.DrawTeapot(deviceContext, camera.state.viewProjection.data(), world.data()); // use manipulated world
-        // gizmo.Draw(camera.state.viewProjection.data());                                       // draw gizmo
+        Im3d_Impl_NewFrame(&camera.state, &state.Mouse, deltaTime);
+
+        // process gizmo, not draw, build draw list.
+        Im3d::Gizmo("GizmoUnified", world.data());
+
+        // use manipulated world
+        renderer.DrawTeapot(deviceContext, camera.state.viewProjection.data(), world.data());
+
+        Im3d::EndFrame();
+
+        // draw gizmo
+        dx11im3d.Draw(deviceContext, camera.state.viewProjection.data());
 
         // transfer backbuffer
         dx11.Present();

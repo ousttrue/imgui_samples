@@ -13,7 +13,7 @@ const std::string g_hlsl =
 
 using namespace Microsoft::WRL;
 
-ComPtr<ID3DBlob> LoadCompileShader(const std::string &src, const char *name, const D3D_SHADER_MACRO *define, const char *target)
+static ComPtr<ID3DBlob> LoadCompileShader(const std::string &src, const char *name, const D3D_SHADER_MACRO *define, const char *target)
 {
     UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
 
