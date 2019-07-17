@@ -1,9 +1,9 @@
 #include "win32_window.h"
 #include "dx11_context.h"
 #include "dx11_renderer.h"
-#include "im3d_impl_dx11.h"
 #include "orbit_camera.h"
-#include "im3d_gui.h"
+#include "im3d_impl.h"
+#include "im3d_impl_dx11.h"
 #include <im3d.h>
 #include <plog/Log.h>
 #include <plog/Appenders/DebugOutputAppender.h>

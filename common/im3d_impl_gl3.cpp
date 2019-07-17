@@ -23,7 +23,7 @@ class Im3dImplGL3Impl
     GLuint g_Im3dShaderTriangles;
 
 public:
-    Im3dImplGL3Impl()
+    Im3dImplGL3Impl(const std::string &version)
     {
         static_assert(sizeof(Im3d::VertexData) % 16 == 0);
 
@@ -35,46 +35,65 @@ public:
         LOGI << "GL_MAX_UNIFORM_BLOCK_SIZE: " << value;
 
         {
-            auto vs = ShaderSource(g_glsl, "#version 140");
+            auto vs = ShaderSource(g_glsl, version);
             vs.Define("VERTEX_SHADER");
             vs.Define("POINTS");
-            // vs.Replace("noperspective", "");
+            if (version == "#version 300 es")
+            {
+                vs.Replace("noperspective", "");
+            }
 
-            auto fs = ShaderSource(g_glsl, "#version 140");
+            auto fs = ShaderSource(g_glsl, version);
             fs.Define("FRAGMENT_SHADER");
             fs.Define("POINTS");
-            fs.Insert("precision mediump float;\n");
-            // fs.Replace("noperspective", "");
+            if (version == "#version 300 es")
+            {
+                fs.Insert("precision mediump float;\n");
+                fs.Replace("noperspective", "");
+            }
             g_Im3dShaderPoints = CreateShader("im3d_point", vs.GetSource(), fs.GetSource());
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderPoints, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderPoints, blockIndex, 0);
         }
         {
-            auto vs = ShaderSource(g_glsl, "#version 140");
+            auto vs = ShaderSource(g_glsl, version);
             vs.Define("VERTEX_SHADER");
             vs.Define("LINES");
-            // vs.Replace("noperspective", "");
+            if (version == "#version 300 es")
+            {
+                vs.Replace("noperspective", "");
+            }
 
-            auto fs = ShaderSource(g_glsl, "#version 140");
+            auto fs = ShaderSource(g_glsl, version);
             fs.Define("FRAGMENT_SHADER");
             fs.Define("LINES");
-            fs.Insert("precision mediump float;\n");
-            // fs.Replace("noperspective", "");
+            if (version == "#version 300 es")
+            {
+                fs.Insert("precision mediump float;\n");
+                fs.Replace("noperspective", "");
+            }
             g_Im3dShaderLines = CreateShader("im3d_line", vs.GetSource(), fs.GetSource());
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderLines, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderLines, blockIndex, 0);
         }
         {
-            auto vs = ShaderSource(g_glsl, "#version 140");
+            auto vs = ShaderSource(g_glsl, version);
             vs.Define("VERTEX_SHADER");
             vs.Define("TRIANGLES");
-            // vs.Replace("noperspective", "");
+            if (version == "#version 300 es")
+            {
+                vs.Replace("noperspective", "");
+            }
 
-            auto fs = ShaderSource(g_glsl, "#version 140");
+            auto fs = ShaderSource(g_glsl, version);
             fs.Define("FRAGMENT_SHADER");
             fs.Define("TRIANGLES");
-            fs.Insert("precision mediump float;\n");
-            // fs.Replace("noperspective", "");
+            if (version == "#version 300 es")
+            {
+                fs.Insert("precision mediump float;\n");
+                fs.Replace("noperspective", "");
+            }
+
             g_Im3dShaderTriangles = CreateShader("im3d_triangle", vs.GetSource(), fs.GetSource());
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderTriangles, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderTriangles, blockIndex, 0);
@@ -194,8 +213,8 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-Im3dImplGL3::Im3dImplGL3()
-    : m_impl(new Im3dImplGL3Impl)
+Im3dImplGL3::Im3dImplGL3(const std::string &version)
+    : m_impl(new Im3dImplGL3Impl(version))
 {
 }
 

@@ -122,12 +122,18 @@ void GL3Renderer::DrawTeapot(const float *viewProjection, const float *world)
     {
         auto vs = ShaderSource(g_glsl, m_version);
         vs.Define("VERTEX_SHADER");
-        vs.Replace("noperspective", "");
+        if(m_version=="#version 300 es")
+        {
+            vs.Replace("noperspective", "");
+        }
 
         auto fs = ShaderSource(g_glsl, m_version);
         fs.Define("FRAGMENT_SHADER");
-        fs.Insert("precision mediump float;\n");
-        fs.Replace("noperspective", "");
+        if(m_version=="#version 300 es")
+        {
+            fs.Insert("precision mediump float;\n");
+            fs.Replace("noperspective", "");
+        }
 
         shTeapot = CreateShader("model.glsl", vs.GetSource(), fs.GetSource());
         glGenBuffers(1, &vbTeapot);

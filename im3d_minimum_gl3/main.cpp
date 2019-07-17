@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     }
 
     GL3Renderer renderer;
-    Im3dImplGL3 im3dImplGL3;
+    Im3dImplGL3 im3dImplGL3("#version 140");
 
     auto world = amth::IdentityMatrix();
 
