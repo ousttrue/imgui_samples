@@ -1,4 +1,4 @@
-#include "dx11_im3d.h"
+#include "im3d_impl_dx11.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <im3d.h>
@@ -28,7 +28,7 @@ static ComPtr<ID3DBlob> LoadCompileShader(const std::string &src, const char *na
     return ret;
 }
 
-class DX11Im3dImpl
+class Im3dImplDx11Impl
 {
     struct D3DShader
     {
@@ -402,17 +402,17 @@ public:
     }
 };
 
-DX11Im3d::DX11Im3d()
-    : m_impl(new DX11Im3dImpl)
+Im3dImplDx11::Im3dImplDx11()
+    : m_impl(new Im3dImplDx11Impl)
 {
 }
 
-DX11Im3d::~DX11Im3d()
+Im3dImplDx11::~Im3dImplDx11()
 {
     delete m_impl;
 }
 
-void DX11Im3d::Draw(void *deviceContext, const float *viewProjection)
+void Im3dImplDx11::Draw(void *deviceContext, const float *viewProjection)
 {
     m_impl->Draw((ID3D11DeviceContext *)deviceContext, viewProjection);
 }

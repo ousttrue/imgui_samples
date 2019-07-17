@@ -30,5 +30,5 @@ struct OrbitCamera
     void CalcView();
     void CalcPerspective();
     void SetViewport(int x, int y, int w, int h);
-    void MouseInput(const MouseState &mouse);
+    void WindowInput(const WindowState &window);
 };

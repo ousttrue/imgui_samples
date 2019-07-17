@@ -156,8 +156,11 @@ void OrbitCamera::SetViewport(int x, int y, int w, int h)
     CalcPerspective();
 }
 
-void OrbitCamera::MouseInput(const MouseState &mouse)
+void OrbitCamera::WindowInput(const WindowState &window)
 {
+    SetViewport(0, 0, window.Width, window.Height);
+
+    auto &mouse = window.Mouse;
     if (prevMouseX != -1 && prevMouseY != -1)
     {
         auto deltaX = mouse.X - prevMouseX;
@@ -186,4 +189,5 @@ void OrbitCamera::MouseInput(const MouseState &mouse)
     prevMouseX = mouse.X;
     prevMouseY = mouse.Y;
     CalcView();
+    state.CalcViewProjection();
 }
