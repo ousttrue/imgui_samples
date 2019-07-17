@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <math.h>
 
 namespace amth
 {
@@ -68,11 +69,156 @@ inline void Transpose(std::array<float, 16> &m)
 inline std::array<float, 16> IdentityMatrix()
 {
     return std::array<float, 16>{
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
     };
+}
+
+inline std::array<float, 16> YawMatrix(float yawRadians)
+{
+    auto ys = (float)sin(yawRadians);
+    auto yc = (float)cos(yawRadians);
+    std::array<float, 16> yaw = {
+        yc,
+        0,
+        ys,
+        0,
+
+        0,
+        1,
+        0,
+        0,
+
+        -ys,
+        0,
+        yc,
+        0,
+
+        0,
+        0,
+        0,
+        1,
+    };
+    return yaw;
+}
+
+inline std::array<float, 16> PitchMatrix(float pitchRadians)
+{
+    auto ps = (float)sin(pitchRadians);
+    auto pc = (float)cos(pitchRadians);
+    std::array<float, 16> pitch = {
+        1,
+        0,
+        0,
+        0,
+
+        0,
+        pc,
+        ps,
+        0,
+
+        0,
+        -ps,
+        pc,
+        0,
+
+        0,
+        0,
+        0,
+        1,
+    };
+    return pitch;
+}
+
+inline std::array<float, 16> TranslationMatrix(float x, float y, float z)
+{
+    std::array<float, 16> t = {
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        x,
+        y,
+        z,
+        1,
+    };
+    return t;
+}
+
+inline double cot(double value)
+{
+    return 1.0f / tan(value);
+}
+
+inline void PerspectiveRHGL(float projection[16], float fovYRadians, float aspectRatio, float zNear, float zFar)
+{
+    const float f = static_cast<float>(cot(fovYRadians / 2.0));
+    projection[0] = f / aspectRatio;
+    projection[1] = 0.0f;
+    projection[2] = 0.0f;
+    projection[3] = 0.0f;
+
+    projection[4] = 0.0f;
+    projection[5] = f;
+    projection[6] = 0.0f;
+    projection[7] = 0.0f;
+
+    projection[8] = 0.0f;
+    projection[9] = 0.0f;
+    projection[10] = (zNear + zFar) / (zNear - zFar);
+    projection[11] = -1;
+
+    projection[12] = 0.0f;
+    projection[13] = 0.0f;
+    projection[14] = (2 * zFar * zNear) / (zNear - zFar);
+    projection[15] = 0.0f;
+}
+
+inline void PerspectiveRHDX(float projection[16], float fovYRadians, float aspectRatio, float zNear, float zFar)
+{
+    auto yScale = (float)cot(fovYRadians / 2);
+    auto xScale = yScale / aspectRatio;
+    projection[0] = xScale;
+    projection[1] = 0.0f;
+    projection[2] = 0.0f;
+    projection[3] = 0.0f;
+
+    projection[4] = 0.0f;
+    projection[5] = yScale;
+    projection[6] = 0.0f;
+    projection[7] = 0.0f;
+
+    projection[8] = 0.0f;
+    projection[9] = 0.0f;
+    projection[10] = zFar / (zNear - zFar);
+    projection[11] = -1;
+
+    projection[12] = 0.0f;
+    projection[13] = 0.0f;
+    projection[14] = (zFar * zNear) / (zNear - zFar);
+    projection[15] = 0.0f;
 }
 
 } // namespace amth

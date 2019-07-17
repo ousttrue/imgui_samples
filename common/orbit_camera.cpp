@@ -4,74 +4,10 @@
 
 void OrbitCamera::CalcView()
 {
-    auto ys = (float)sin(yawRadians);
-    auto yc = (float)cos(yawRadians);
-    std::array<float, 16> yaw = {
-        yc,
-        0,
-        ys,
-        0,
-
-        0,
-        1,
-        0,
-        0,
-
-        -ys,
-        0,
-        yc,
-        0,
-
-        0,
-        0,
-        0,
-        1,
-    };
-
-    auto ps = (float)sin(pitchRadians);
-    auto pc = (float)cos(pitchRadians);
-    std::array<float, 16> pitch = {
-        1,
-        0,
-        0,
-        0,
-
-        0,
-        pc,
-        ps,
-        0,
-
-        0,
-        -ps,
-        pc,
-        0,
-
-        0,
-        0,
-        0,
-        1,
-    };
-
-    std::array<float, 16> t = {
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        -shiftX,
-        -shiftY,
-        -shiftZ,
-        1,
-    };
-
+    auto yaw = amth::YawMatrix(yawRadians);
+    auto pitch = amth::PitchMatrix(pitchRadians);
     auto yawPitch = amth::Mult(yaw, pitch);
+    auto t = amth::TranslationMatrix(-shiftX, -shiftY, -shiftZ);
     state.view = amth::Mult(yawPitch, t);
 
     t[12] *= -1;
@@ -81,57 +17,12 @@ void OrbitCamera::CalcView()
     state.viewInverse = amth::Mult(t, yawPitch);
 }
 
-static double cot(double value)
-{
-    return 1.0f / tan(value);
-}
-
 void OrbitCamera::CalcPerspective()
 {
-#if 1
-// OpenGL
-    const float f = static_cast<float>(1.0f / tan(state.fovYRadians / 2.0));
-    state.projection[0] = f / aspectRatio;
-    state.projection[1] = 0.0f;
-    state.projection[2] = 0.0f;
-    state.projection[3] = 0.0f;
-
-    state.projection[4] = 0.0f;
-    state.projection[5] = f;
-    state.projection[6] = 0.0f;
-    state.projection[7] = 0.0f;
-
-    state.projection[8] = 0.0f;
-    state.projection[9] = 0.0f;
-    state.projection[10] = (zNear + zFar) / (zNear - zFar);
-    state.projection[11] = -1;
-
-    state.projection[12] = 0.0f;
-    state.projection[13] = 0.0f;
-    state.projection[14] = (2 * zFar * zNear) / (zNear - zFar);
-    state.projection[15] = 0.0f;
+#if 0
+    amth::PerspectiveRHGL(state.projection.data(), state.fovYRadians, aspectRatio, zNear, zFar);
 #else
-    auto yScale = (float)cot(state.fovYRadians / 2);
-    auto xScale = yScale / aspectRatio;
-    state.projection[0] = xScale;
-    state.projection[1] = 0.0f;
-    state.projection[2] = 0.0f;
-    state.projection[3] = 0.0f;
-
-    state.projection[4] = 0.0f;
-    state.projection[5] = yScale;
-    state.projection[6] = 0.0f;
-    state.projection[7] = 0.0f;
-
-    state.projection[8] = 0.0f;
-    state.projection[9] = 0.0f;
-    state.projection[10] = zFar / (zNear - zFar);
-    state.projection[11] = -1;
-
-    state.projection[12] = 0.0f;
-    state.projection[13] = 0.0f;
-    state.projection[14] = (zFar * zNear) / (zNear - zFar);
-    state.projection[15] = 0.0f;
+    amth::PerspectiveRHDX(state.projection.data(), state.fovYRadians, aspectRatio, zNear, zFar);
 #endif
 }
 
