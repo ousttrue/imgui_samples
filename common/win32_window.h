@@ -17,5 +17,4 @@ public:
     void* Create(int w, int h, const wchar_t *title);
     bool IsRunning();
     const WindowState &GetState() const;
-    float GetTimeSeconds() const;
 };

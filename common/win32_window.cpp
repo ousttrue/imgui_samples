@@ -73,11 +73,27 @@ public:
         }
         return true;
     }
+    mutable DWORD m_startTime = 0;
+    mutable DWORD m_lastTime = 0;
     const WindowState &GetState() const
     {
-        if(m_clearWheel){
+        if (m_clearWheel)
+        {
             m_state.Mouse.Wheel = 0;
         }
+
+        auto now = timeGetTime();
+        if (m_startTime == 0)
+        {
+            m_startTime = now;
+            m_lastTime = now;
+        }
+        auto elapsed = now - m_startTime;
+        auto delta = now - m_lastTime;
+        m_lastTime = now;
+        m_state.elapsedSeconds = elapsed * 0.001f;
+        m_state.deltaSeconds = delta * 0.001f;
+
         m_clearWheel = true;
         return m_state;
     }
@@ -205,7 +221,7 @@ Win32Window::~Win32Window()
     }
 }
 
-void* Win32Window::Create(int w, int h, const wchar_t *title)
+void *Win32Window::Create(int w, int h, const wchar_t *title)
 {
     auto hInstance = GetModuleHandle(0);
     auto wndClass = GetOrRegisterWindowClass(hInstance, L"Win32WindowImpl");
@@ -240,9 +256,4 @@ bool Win32Window::IsRunning()
 const WindowState &Win32Window::GetState() const
 {
     return m_impl->GetState();
-}
-
-float Win32Window::GetTimeSeconds() const
-{
-    return timeGetTime() * 0.001f;
 }

@@ -1,14 +1,14 @@
 #include "im3d_gui.h"
 #include "camera_state.h"
-#include "mouse_state.h"
+#include "window_state.h"
 #include <im3d.h>
 #include <im3d_math.h>
 
-void Im3d_Impl_NewFrame(const camera::CameraState *c, const MouseState *mouse, float deltaTime)
+void Im3d_Impl_NewFrame(const camera::CameraState *c, const WindowState *window)
 {
     auto &ad = Im3d::GetAppData();
 
-    ad.m_deltaTime = deltaTime;
+    ad.m_deltaTime = window->deltaSeconds;
     ad.m_viewportSize = Im3d::Vec2((float)c->viewportWidth, (float)c->viewportHeight);
 
     auto &inv = c->viewInverse;
@@ -21,7 +21,8 @@ void Im3d_Impl_NewFrame(const camera::CameraState *c, const MouseState *mouse, f
     ad.m_projScaleY = tanf(c->fovYRadians * 0.5f) * 2.0f;
 
     // World space cursor ray from mouse position; for VR this might be the position/orientation of the HMD or a tracked controller.
-    Im3d::Vec2 cursorPos((float)mouse->X, (float)mouse->Y);
+    auto &mouse = window->Mouse;
+    Im3d::Vec2 cursorPos((float)mouse.X, (float)mouse.Y);
     cursorPos = (cursorPos / ad.m_viewportSize) * 2.0f - 1.0f;
     cursorPos.y = -cursorPos.y; // window origin is top-left, ndc is bottom-left
     Im3d::Vec3 rayOrigin, rayDirection;
@@ -51,7 +52,7 @@ void Im3d_Impl_NewFrame(const camera::CameraState *c, const MouseState *mouse, f
     // Fill the key state array; using GetAsyncKeyState here but this could equally well be done via the window proc.
     // All key states have an equivalent (and more descriptive) 'Action_' enum.
     //ad.m_keyDown[Im3d::Mouse_Left /*Im3d::Action_Select*/] = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
-    ad.m_keyDown[Im3d::Mouse_Left /*Im3d::Action_Select*/] = mouse->IsDown(ButtonFlags::Left);
+    ad.m_keyDown[Im3d::Mouse_Left /*Im3d::Action_Select*/] = mouse.IsDown(ButtonFlags::Left);
 
 #if 0
     // The following key states control which gizmo to use for the generic Gizmo() function. Here using the left ctrl key as an additional predicate.

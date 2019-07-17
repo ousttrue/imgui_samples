@@ -35,8 +35,6 @@ int main(int argc, char **argv)
 
     OrbitCamera camera;
 
-    float lastTime = 0;
-
     while (window.IsRunning())
     {
         // camera update
@@ -44,17 +42,10 @@ int main(int argc, char **argv)
         camera.SetViewport(0, 0, state.Width, state.Height);
         camera.MouseInput(state.Mouse);
         camera.state.CalcViewProjection();
-        auto time = window.GetTimeSeconds();
-        auto deltaTime = 0.0016f;
-        if (lastTime > 0)
-        {
-            deltaTime = time - lastTime;
-        }
-        lastTime = time;
 
         // render
         auto deviceContext = dx11.NewFrame(state.Width, state.Height); // setViewPort & clear background
-        Im3d_Impl_NewFrame(&camera.state, &state.Mouse, deltaTime);
+        Im3d_Impl_NewFrame(&camera.state, &state);
 
         // process gizmo, not draw, build draw list.
         Im3d::Gizmo("GizmoUnified", world.data());

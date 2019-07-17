@@ -1,9 +1,9 @@
 #pragma once
 
-struct MouseState;
+struct WindowState;
 namespace camera
 {
 struct CameraState;
 }
 
-void Im3d_Impl_NewFrame(const camera::CameraState *camera, const MouseState *mouse, float deltaTime);
+void Im3d_Impl_NewFrame(const camera::CameraState *camera, const WindowState *window);
