@@ -12,7 +12,9 @@ struct VS_OUTPUT
 	linear        float4 m_color        : COLOR;
 	linear        float2 m_uv           : TEXCOORD;
 	noperspective float  m_size         : SIZE;
+#ifdef LINES
 	noperspective float  m_edgeDistance : EDGE_DISTANCE;
+#endif
 };
 
 #define kAntialiasing 2.0
@@ -60,7 +62,7 @@ struct VS_OUTPUT
 			float2 scale = 1.0 / uViewport * _in[0].m_size;
 			ret.m_size  = _in[0].m_size;
 			ret.m_color = _in[0].m_color;
-			ret.m_edgeDistance = _in[0].m_edgeDistance;
+			// ret.m_edgeDistance = _in[0].m_edgeDistance;
 			
 			ret.m_position = float4(_in[0].m_position.xy + float2(-1.0, -1.0) * scale * _in[0].m_position.w, _in[0].m_position.zw);
 			ret.m_uv = float2(0.0, 0.0);
