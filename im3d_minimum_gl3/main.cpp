@@ -2,16 +2,18 @@
 #include "wgl_context.h"
 #include "gl3_renderer.h"
 #include "orbit_camera.h"
-#include "im3d_gui.h"
+#include "im3d_impl.h"
+#include "im3d_impl_gl3.h"
+#include <im3d.h>
 
 int main(int argc, char **argv)
 {
     Win32Window window;
-    if (!window.Create(640, 480, L"im3d_minimum_gl3"))
+    auto hwnd = window.Create(640, 480, L"im3d_minimum_gl3");
+    if (!hwnd)
     {
         return 1;
     }
-    auto hwnd = window.GetState().Handle;
 
     WGLContext wgl;
     if (!wgl.Create(hwnd, 3, 0))
@@ -20,59 +22,27 @@ int main(int argc, char **argv)
     }
 
     GL3Renderer renderer;
+    Im3dImplGL3 im3dImplGL3;
 
-    float world[] = {
-        1,
-        0,
-        0,
-        0,
-
-        0,
-        1,
-        0,
-        0,
-
-        0,
-        0,
-        1,
-        0,
-
-        0,
-        0,
-        0,
-        1,
-    };
+    auto world = amth::IdentityMatrix();
 
     OrbitCamera camera;
-
-    Im3dGui gizmo;
-    if(!gizmo.Initialize()){
-        return 3;
-    }
-
-    float lastTime = 0;
 
     while (window.IsRunning())
     {
         // camera update
-        auto &state = window.GetState();
-        camera.SetViewport(0, 0, state.Width, state.Height);
-        camera.MouseInput(state.Mouse);
-        camera.state.CalcViewProjection();
-        auto time = window.GetTimeSeconds();
-        auto deltaTime = 0.0016f;
-        if (lastTime > 0)
-        {
-            deltaTime = time - lastTime;
-        }
-        lastTime = time;
+        auto &windowState = window.GetState();
+        camera.WindowInput(windowState);
+
+        Im3d_Impl_NewFrame(&camera.state, &windowState);
+        // process gizmo, not draw, build draw list.
+        Im3d::Gizmo("GizmoUnified", world.data());
+        Im3d::EndFrame();
 
         // render
-        renderer.NewFrame(state.Width, state.Height); // setViewPort & clear background
-        gizmo.NewFrame(&camera.state, &state.Mouse, deltaTime);
-        gizmo.Manipulate(world); // process gizmo, not draw, build draw list.
-        renderer.DrawTeapot(camera.state.viewProjection.data(), world); // use manipulated world
-        gizmo.Draw(camera.state.viewProjection.data()); // draw gizmo
+        renderer.NewFrame(windowState.Width, windowState.Height);              // setViewPort & clear background
+        renderer.DrawTeapot(camera.state.viewProjection.data(), world.data()); // use manipulated world
+        im3dImplGL3.Draw(camera.state.viewProjection.data());
 
         // transfer backbuffer
         wgl.Present();

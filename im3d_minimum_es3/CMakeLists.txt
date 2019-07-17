@@ -7,7 +7,7 @@ ADD_EXECUTABLE(${SUB_NAME}
     ${SRC}
     ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/im3d.cpp
     #
-    ${CMAKE_CURRENT_LIST_DIR}/../common/im3d_gl3.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../common/im3d_impl_gl3.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/gl3_renderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/orbit_camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/win32_window.cpp

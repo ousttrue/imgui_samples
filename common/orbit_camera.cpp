@@ -88,7 +88,7 @@ static double cot(double value)
 
 void OrbitCamera::CalcPerspective()
 {
-#if 0
+#if 1
 // OpenGL
     const float f = static_cast<float>(1.0f / tan(state.fovYRadians / 2.0));
     state.projection[0] = f / aspectRatio;

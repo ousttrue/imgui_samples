@@ -1,4 +1,4 @@
-#include "im3d_gui.h"
+#include "im3d_impl.h"
 #include "camera_state.h"
 #include "window_state.h"
 #include <im3d.h>

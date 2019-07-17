@@ -1,4 +1,5 @@
 #include "gl3_renderer.h"
+#include "shader_source.h"
 #include <array>
 #include <sstream>
 #include <fstream>
@@ -119,11 +120,11 @@ void GL3Renderer::DrawTeapot(const float *viewProjection, const float *world)
     static GLuint vaTeapot = 0;
     if (shTeapot == 0)
     {
-        auto vs = GL3ShaderSource(g_glsl, m_version);
+        auto vs = ShaderSource(g_glsl, m_version);
         vs.Define("VERTEX_SHADER");
         vs.Replace("noperspective", "");
 
-        auto fs = GL3ShaderSource(g_glsl, m_version);
+        auto fs = ShaderSource(g_glsl, m_version);
         fs.Define("FRAGMENT_SHADER");
         fs.Insert("precision mediump float;\n");
         fs.Replace("noperspective", "");
