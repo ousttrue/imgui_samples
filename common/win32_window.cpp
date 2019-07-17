@@ -3,6 +3,7 @@
 #include <windowsx.h> // GET_X_LPARAM macros
 #include "save_windowplacement.h"
 #include <assert.h>
+#include <plog/Log.h>
 
 static LRESULT CALLBACK WindowProc(HWND _hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 class Win32WindowImpl *g_window = nullptr;
@@ -156,6 +157,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     case WM_LBUTTONDOWN:
     {
         auto &state = g_window->GetStateInternal();
+        SetCapture(hWnd);
         state.Mouse.Down(ButtonFlags::Left);
         return 0;
     }
@@ -164,12 +166,17 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
         auto &state = g_window->GetStateInternal();
         state.Mouse.Up(ButtonFlags::Left);
+        if (state.Mouse.Buttons == ButtonFlags::None)
+        {
+            ReleaseCapture();
+        }
         return 0;
     }
 
     case WM_MBUTTONDOWN:
     {
         auto &state = g_window->GetStateInternal();
+        SetCapture(hWnd);
         state.Mouse.Down(ButtonFlags::Middle);
         return 0;
     }
@@ -178,12 +185,17 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
         auto &state = g_window->GetStateInternal();
         state.Mouse.Up(ButtonFlags::Middle);
+        if (state.Mouse.Buttons == ButtonFlags::None)
+        {
+            ReleaseCapture();
+        }
         return 0;
     }
 
     case WM_RBUTTONDOWN:
     {
         auto &state = g_window->GetStateInternal();
+        SetCapture(hWnd);
         state.Mouse.Down(ButtonFlags::Right);
         return 0;
     }
@@ -192,6 +204,10 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
         auto &state = g_window->GetStateInternal();
         state.Mouse.Up(ButtonFlags::Right);
+        if (state.Mouse.Buttons == ButtonFlags::None)
+        {
+            ReleaseCapture();
+        }
         return 0;
     }
 

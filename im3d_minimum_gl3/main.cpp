@@ -5,9 +5,14 @@
 #include "im3d_impl.h"
 #include "im3d_impl_gl3.h"
 #include <im3d.h>
+#include <plog/Log.h>
+#include <plog/Appenders/DebugOutputAppender.h>
 
 int main(int argc, char **argv)
 {
+    static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
+    plog::init(plog::verbose, &debugOutputAppender);
+
     Win32Window window;
     auto hwnd = window.Create(640, 480, L"im3d_minimum_gl3");
     if (!hwnd)
