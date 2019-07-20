@@ -10,10 +10,11 @@ enum class ButtonFlags : int
 
 struct MouseState
 {
-    int X;
-    int Y;
-    int Wheel;
-    ButtonFlags Buttons;
+    int X = 0;
+    int Y = 0;
+    int Wheel = 0;
+    ButtonFlags Buttons = ButtonFlags::None;
+
     void Down(ButtonFlags button)
     {
         Buttons = static_cast<ButtonFlags>((int)Buttons | (int)button);

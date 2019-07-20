@@ -5,7 +5,7 @@ struct WindowState
 {
     int Width;
     int Height;
-    float elapsedSeconds;
-    float deltaSeconds;
+    float ElapsedSeconds;
+    float DeltaSeconds;
     MouseState Mouse;
 };

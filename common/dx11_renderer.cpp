@@ -1,4 +1,5 @@
 #include "dx11_renderer.h"
+#include "dx11_rendertarget.h"
 #include "teapot.h"
 #include <string>
 #include <array>
@@ -31,11 +32,48 @@ static ComPtr<ID3DBlob> LoadCompileShader(const std::string &src, const char *na
 
 class DX11RendererImpl
 {
+    int m_width = 0;
+    int m_height = 0;
+    Dx11RenderTarget m_rt;
 
 public:
-    bool Create(ID3D11Device *device)
+    void *NewFrameToRenderTarget(ID3D11DeviceContext *deviceContext, int width, int height, const float *clear)
     {
-        return true;
+        if (!m_rt.m_rtv || width != m_width || height != m_height)
+        {
+            m_rt = Dx11RenderTarget();
+            m_width = width;
+            m_height = height;
+
+            ComPtr<ID3D11Device> device;
+            deviceContext->GetDevice(&device);
+
+            // create depthbuffer
+            D3D11_TEXTURE2D_DESC desc = {0};
+            desc.Width = m_width;
+            desc.Height = m_height;
+            desc.MipLevels = 1;
+            desc.ArraySize = 1;
+            desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            desc.SampleDesc.Count = 1;
+            desc.SampleDesc.Quality = 0;
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+            ComPtr<ID3D11Texture2D> texture;
+            if (FAILED(device->CreateTexture2D(&desc, nullptr, &texture)))
+            {
+                return nullptr;
+            }
+
+            if (!m_rt.Initialize(device.Get(), texture, true))
+            {
+                return nullptr;
+            }
+        }
+
+        m_rt.ClearAndSet(deviceContext, clear, 1.0f, 0xff, m_width, m_height);
+
+        return m_rt.m_srv.Get();
     }
 };
 
@@ -47,6 +85,11 @@ DX11Renderer::DX11Renderer()
 DX11Renderer::~DX11Renderer()
 {
     delete m_impl;
+}
+
+void *DX11Renderer::NewFrameToRenderTarget(void *deviceContext, int width, int height, const float *clear)
+{
+    return m_impl->NewFrameToRenderTarget((ID3D11DeviceContext *)deviceContext, width, height, clear);
 }
 
 struct ConstantBuffer

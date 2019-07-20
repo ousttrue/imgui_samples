@@ -1,4 +1,5 @@
 #include "dx11_context.h"
+#include "dx11_rendertarget.h"
 #include <d3d11.h>
 #include <stdio.h>
 #include <wrl/client.h> // ComPtr
@@ -12,8 +13,7 @@ class DX11ContextImpl
     ComPtr<ID3D11DeviceContext> m_context;
     ComPtr<IDXGISwapChain> m_swapchain;
 
-    ComPtr<ID3D11RenderTargetView> m_rtv;
-    ComPtr<ID3D11DepthStencilView> m_dsv;
+    Dx11RenderTarget m_rt;
 
 public:
     ID3D11DeviceContext *GetDeviceContext()
@@ -78,10 +78,10 @@ public:
     {
         if (width != m_width || height != m_height)
         {
-            m_rtv.Reset();
-            m_dsv.Reset();
             // clear
+            m_rt = Dx11RenderTarget();
             m_context->OMSetRenderTargets(0, nullptr, nullptr);
+
             // resize swapchain
             DXGI_SWAP_CHAIN_DESC desc;
             m_swapchain->GetDesc(&desc);
@@ -91,7 +91,7 @@ public:
             m_height = height;
         }
 
-        if (!m_rtv)
+        if (!m_rt.m_rtv)
         {
             // get backbuffer
             ComPtr<ID3D11Texture2D> backBuffer;
@@ -101,59 +101,12 @@ public:
                 LOGE << "fail to get backbuffer";
                 return nullptr;
             }
-            D3D11_TEXTURE2D_DESC backBufferDesc;
-            backBuffer->GetDesc(&backBufferDesc);
-
-            // create RtV
-            if (FAILED(m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_rtv)))
-            {
-                return false;
-            }
-
-            // create depthbuffer
-            D3D11_TEXTURE2D_DESC depthDesc = {0};
-            depthDesc.Width = backBufferDesc.Width;
-            depthDesc.Height = backBufferDesc.Height;
-            depthDesc.MipLevels = 1;
-            depthDesc.ArraySize = 1;
-            depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-            depthDesc.SampleDesc.Count = 1;
-            depthDesc.Usage = D3D11_USAGE_DEFAULT;
-            depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-            ComPtr<ID3D11Texture2D> depthBuffer;
-            if (FAILED(m_device->CreateTexture2D(&depthDesc, nullptr, &depthBuffer)))
-            {
-                return false;
-            }
-
-            // create dsv
-            if (FAILED(m_device->CreateDepthStencilView(depthBuffer.Get(), nullptr, &m_dsv)))
-            {
-                return false;
-            }
+            m_rt.Initialize(m_device.Get(), backBuffer, false);
         }
 
         // clear
-        float clear[] = {0.3f, 0.3f, 0.3f, 0.0f};
-        m_context->ClearRenderTargetView(m_rtv.Get(), clear);
-        m_context->ClearDepthStencilView(m_dsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0xff);
-
-        // set backbuffer & depthbuffer
-        ID3D11RenderTargetView *rtv_list[] = {
-            m_rtv.Get()};
-        m_context->OMSetRenderTargets(1, rtv_list, m_dsv.Get());
-        D3D11_VIEWPORT viewports[] =
-            {
-                {
-                    .TopLeftX = 0,
-                    .TopLeftY = 0,
-                    .Width = (float)m_width,
-                    .Height = (float)m_height,
-                    .MinDepth = 0,
-                    .MaxDepth = 1.0f,
-                },
-            };
-        m_context->RSSetViewports(_countof(viewports), viewports);
+        float clear[] = {0.3f, 0.3f, 0.3f, 1.0f};
+        m_rt.ClearAndSet(m_context.Get(), clear, 1.0f, 0xff, m_width, m_height);
 
         return m_context.Get();
     }

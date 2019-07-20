@@ -92,8 +92,8 @@ public:
         auto elapsed = now - m_startTime;
         auto delta = now - m_lastTime;
         m_lastTime = now;
-        m_state.elapsedSeconds = elapsed * 0.001f;
-        m_state.deltaSeconds = delta * 0.001f;
+        m_state.ElapsedSeconds = elapsed * 0.001f;
+        m_state.DeltaSeconds = delta * 0.001f;
 
         m_clearWheel = true;
         return m_state;

@@ -8,7 +8,7 @@ void Im3d_Impl_NewFrame(const camera::CameraState *c, const WindowState *window)
 {
     auto &ad = Im3d::GetAppData();
 
-    ad.m_deltaTime = window->deltaSeconds;
+    ad.m_deltaTime = window->DeltaSeconds;
     ad.m_viewportSize = Im3d::Vec2((float)c->viewportWidth, (float)c->viewportHeight);
 
     auto &inv = c->viewInverse;
