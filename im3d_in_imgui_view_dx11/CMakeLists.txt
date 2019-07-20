@@ -1,4 +1,4 @@
-SET(SUB_NAME im3d_minimum_dx11)
+SET(SUB_NAME im3d_in_imgui_view_dx11)
 
 FILE(GLOB SRC
     *.cpp

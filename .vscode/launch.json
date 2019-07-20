@@ -12,8 +12,7 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-            ],
+            "environment": [],
             "externalConsole": false
         },
         {
@@ -37,6 +36,22 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/im3d_minimum_dx11/im3d_minimum_dx11.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
+                }
+            ],
+            "externalConsole": false
+        },
+        {
+            "name": "dx11_view",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/im3d_in_imgui_view_dx11/im3d_in_imgui_view_dx11.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
