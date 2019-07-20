@@ -77,16 +77,17 @@ int main(int argc, char **argv)
         {
             // auto size = ImGui::GetWindowSize();
             auto size = ImGui::GetContentRegionAvail();
+            auto pos = ImGui::GetWindowPos();
+            auto frameHeight = ImGui::GetFrameHeight();
             {
-                auto pos = ImGui::GetMousePos();
                 WindowState viewState{
                     .Width = (int)size.x,
                     .Height = (int)size.y,
                     .ElapsedSeconds = windowState.ElapsedSeconds,
                     .DeltaSeconds = windowState.DeltaSeconds,
                     .Mouse = {
-                        .X = (int)pos.x,
-                        .Y = (int)pos.y,
+                        .X = windowState.Mouse.X - (int)pos.x,
+                        .Y = windowState.Mouse.Y - (int)pos.y - (int)frameHeight,
                         .Wheel = windowState.Mouse.Wheel,
                         .Buttons = windowState.Mouse.Buttons}};
                 // update view camera
