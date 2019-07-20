@@ -7,3 +7,6 @@
 [submodule "dependencies/plog"]
 	path = dependencies/plog
 	url = https://github.com/SergiusTheBest/plog.git
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/ocornut/imgui.git
