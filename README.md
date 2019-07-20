@@ -36,3 +36,12 @@ Application is separated 3 parts.
 But im3d.glsl is not work. Only teapot.
 
 maybe glDrawArraysInstance ?
+
+### im3d_in_imgui_view_dx11
+
+* Direct3D11
+* Render 3D View and Gizmo to renderTarget
+* Show renderTarget in `ImGui::Image`
+* handling mouse input to renderTarget
+
+![renderTarget](./rt.gif)
