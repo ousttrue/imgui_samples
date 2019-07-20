@@ -1,11 +1,6 @@
 #include "win32_window.h"
 #include "dx11_context.h"
-#include "dx11_renderer.h"
-#include "orbit_camera.h"
-
-#include "im3d_impl.h"
-#include "im3d_impl_dx11.h"
-#include <im3d.h>
+#include "dx11_view.h"
 
 #include <imgui.h>
 #include <imgui_impl_win32.h>
@@ -34,12 +29,6 @@ int main(int argc, char **argv)
     }
     auto deviceContext = dx11.GetDeviceContext();
 
-    DX11Renderer renderer;
-    Im3dImplDx11 im3dImplDx11;
-
-    auto world = amth::IdentityMatrix();
-    OrbitCamera camera;
-
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -49,7 +38,8 @@ int main(int argc, char **argv)
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init((ID3D11Device *)device, (ID3D11DeviceContext *)deviceContext);
     bool show_demo_window = true;
-    std::array<float, 4> view_color = {0.60f, 0.45f, 0.55f, 1.00f};
+
+    DX11View view;
 
     while (window.IsRunning())
     {
@@ -65,58 +55,42 @@ int main(int argc, char **argv)
         io.MouseWheel = (float)windowState.Mouse.Wheel;
         ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-        {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        }
+        ////////////////////////////////////////////////////////////
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        if (ImGui::Begin("render target", nullptr,
-                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
         {
-            // auto size = ImGui::GetWindowSize();
-            auto size = ImGui::GetContentRegionAvail();
-            auto pos = ImGui::GetWindowPos();
-            auto frameHeight = ImGui::GetFrameHeight();
+            // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+            if (show_demo_window)
             {
+                ImGui::ShowDemoWindow(&show_demo_window);
+            }
+
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+            if (ImGui::Begin("render target", nullptr,
+                             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+            {
+                auto size = ImGui::GetContentRegionAvail();
+                auto pos = ImGui::GetWindowPos();
+                auto frameHeight = ImGui::GetFrameHeight();
+
+                auto &mouse = windowState.Mouse;
                 WindowState viewState{
                     .Width = (int)size.x,
                     .Height = (int)size.y,
                     .ElapsedSeconds = windowState.ElapsedSeconds,
                     .DeltaSeconds = windowState.DeltaSeconds,
                     .Mouse = {
-                        .X = windowState.Mouse.X - (int)pos.x,
-                        .Y = windowState.Mouse.Y - (int)pos.y - (int)frameHeight,
-                        .Wheel = windowState.Mouse.Wheel,
-                        .Buttons = windowState.Mouse.Buttons}};
+                        .X = mouse.X - (int)pos.x,
+                        .Y = mouse.Y - (int)pos.y - (int)frameHeight,
+                        .Wheel = mouse.Wheel,
+                        .Buttons = mouse.Buttons}};
                 // update view camera
-                camera.WindowInput(viewState);
 
-                //
-                // gizmo update
-                //
-                Im3d_Impl_NewFrame(&camera.state, &viewState);
-                // process gizmo, not draw, build draw list.
-                Im3d::Gizmo("GizmoUnified", world.data());
-                Im3d::EndFrame();
-
-                //
-                // render to viewport
-                //
-                // setViewPort & clear background
-                auto renderTarget = renderer.NewFrameToRenderTarget(deviceContext, viewState.Width, viewState.Height, view_color.data());
-
-                // use manipulated world
-                renderer.DrawTeapot(deviceContext, camera.state.viewProjection.data(), world.data());
-                // draw gizmo
-                im3dImplDx11.Draw(deviceContext, camera.state.viewProjection.data());
-
+                auto renderTarget = view.Draw(deviceContext, viewState);
                 ImGui::ImageButton((ImTextureID)renderTarget, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), 0);
             }
+            ImGui::End();
+            ImGui::PopStyleVar();
         }
-        ImGui::End();
-        ImGui::PopStyleVar();
 
         {
             // render to backbuffer
@@ -131,6 +105,8 @@ int main(int argc, char **argv)
             dx11.Present();
         }
     }
+
+    ImGui_ImplDX11_Shutdown();
 
     return 0;
 }
