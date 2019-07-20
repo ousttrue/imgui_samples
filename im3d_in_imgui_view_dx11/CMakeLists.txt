@@ -6,6 +6,12 @@ FILE(GLOB SRC
 ADD_EXECUTABLE(${SUB_NAME}
     ${SRC}
     ${CMAKE_CURRENT_LIST_DIR}/../dependencies/im3d/im3d.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/imgui/imgui.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/imgui/imgui_draw.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/imgui/imgui_widgets.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/imgui/imgui_demo.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/imgui/examples/imgui_impl_win32.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../dependencies/imgui/examples/imgui_impl_dx11.cpp
     #
     ${CMAKE_CURRENT_LIST_DIR}/../common/orbit_camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../common/win32_window.cpp

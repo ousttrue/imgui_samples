@@ -16,6 +16,11 @@ class DX11ContextImpl
     ComPtr<ID3D11DepthStencilView> m_dsv;
 
 public:
+    ID3D11DeviceContext *GetDeviceContext()
+    {
+        return m_context.Get();
+    }
+
     // create device and swapchain
     ID3D11Device *Create(HWND hWnd)
     {
@@ -183,4 +188,9 @@ void *DX11Context::NewFrame(int width, int height)
 void DX11Context::Present()
 {
     m_impl->Present();
+}
+
+void *DX11Context::GetDeviceContext()
+{
+    return m_impl->GetDeviceContext();
 }
