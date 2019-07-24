@@ -64,9 +64,6 @@ static const std::vector<NodeType> nodes_types_ =
 
 class NodesImpl
 {
-public:
-    ////////////////////////////////////////////////////////////////////////////////
-
     std::vector<std::unique_ptr<Node>> nodes_;
 
     int32_t id_ = 0;
@@ -85,8 +82,6 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////////////////////////
-
     Node *GetHoverNode(ImVec2 offset, ImVec2 pos)
     {
         for (auto &node : nodes_)
@@ -97,13 +92,12 @@ public:
 
             if (rect.Contains(pos))
             {
-                return node->Get();
+                return &*node;
             }
         }
 
         return nullptr;
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////
 
@@ -178,9 +172,8 @@ public:
             focus = canvas_scroll_ + (focus * canvas_scale_);
             canvas_scroll_ += (mouse - focus);
         }
-
-        ////////////////////////////////////////////////////////////////////////////////
     }
+
     void UpdateState(ImVec2 offset)
     {
         if (element_.state_ == NodesState_HoverNode && ImGui::IsMouseDoubleClicked(0))
@@ -627,7 +620,7 @@ public:
                             (connection->target_->position_ + connection->input_->position_),
                             (node->position_ + connection->position_));
 
-                        element_.node_ = node->Get();
+                        element_.node_ = &*node;
                         element_.connection_ = connection.get();
                     }
                 }
@@ -661,8 +654,8 @@ public:
 public:
     void ProcessNodes()
     {
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-
+        ////////////////////////////////////////////////////////////////////////////////
+        // UpdateCanvas
         ////////////////////////////////////////////////////////////////////////////////
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
@@ -674,6 +667,8 @@ public:
             UpdateScroll();
         }
 
+        ////////////////////////////////////////////////////////////////////////////////
+        // DrawGrid
         ////////////////////////////////////////////////////////////////////////////////
 
         {
@@ -698,6 +693,7 @@ public:
         ImVec2 offset = canvas_position_ + canvas_scroll_;
 
         UpdateState(offset);
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
         RenderLines(draw_list, offset);
         DisplayNodes(draw_list, offset);
 
@@ -707,6 +703,8 @@ public:
             draw_list->AddRect(element_.rect_.Min, element_.rect_.Max, ImColor(200.0f, 200.0f, 0.0f, 0.5f));
         }
 
+        ////////////////////////////////////////////////////////////////////////////////
+        // Context Menu
         ////////////////////////////////////////////////////////////////////////////////
 
         {
