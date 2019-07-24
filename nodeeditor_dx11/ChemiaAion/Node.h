@@ -15,6 +15,7 @@ struct NodeType
     std::vector<std::pair<std::string, ConnectionType>> outputs_;
 };
 
+struct NodesElement;
 struct Connection;
 struct Node
 {
@@ -47,6 +48,8 @@ struct Node
     {
         return this;
     }
+
+    void Display(ImDrawList *drawList, ImVec2 offset, float canvas_scale_, NodesElement &element_);
 
     static std::unique_ptr<Node> Create(ImVec2 pos, const NodeType &type, int32_t id);
 };
