@@ -31,6 +31,11 @@ struct NodesElement
     Node *node_;
     Connection *connection_;
 
+    NodesElement()
+    {
+        Reset();
+    }
+
     void Reset(NodesState state = NodesState_Default)
     {
         state_ = state;
