@@ -11,6 +11,7 @@
 
 #include "spacechase0/sample.h"
 #include "ChemiaAion/sample.h"
+#include "imgui_node_graph_test.h"
 
 int main(int argc, char **argv)
 {
@@ -63,8 +64,11 @@ int main(int argc, char **argv)
         // camera update
         camera.WindowInput(windowState);
 
+
         NodeEditor();
         ChemiaAion::NodeEditor();
+        static bool showNodeGraph = true;
+        ShowExampleAppCustomNodeGraph(&showNodeGraph);
 
         //
         // render
