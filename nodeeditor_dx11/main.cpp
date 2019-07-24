@@ -10,6 +10,7 @@
 #include <imgui_impl_dx11.h> // d3d11.h
 
 #include "spacechase0/sample.h"
+#include "ChemiaAion/sample.h"
 
 int main(int argc, char **argv)
 {
@@ -63,6 +64,7 @@ int main(int argc, char **argv)
         camera.WindowInput(windowState);
 
         NodeEditor();
+        ChemiaAion::NodeEditor();
 
         //
         // render

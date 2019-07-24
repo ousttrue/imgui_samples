@@ -3,6 +3,7 @@ SET(SUB_NAME nodeeditor_dx11)
 FILE(GLOB SRC
     *.cpp
     spacechase0/*.cpp
+    ChemiaAion/*.cpp
     ) 
 ADD_EXECUTABLE(${SUB_NAME}
     ${SRC}
