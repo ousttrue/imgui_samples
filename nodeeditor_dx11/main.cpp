@@ -9,7 +9,7 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h> // d3d11.h
 
-#include "sample.h"
+#include "spacechase0/sample.h"
 
 int main(int argc, char **argv)
 {
