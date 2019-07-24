@@ -1,6 +1,9 @@
 #pragma once
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <cstdint>
+#include <vector>
+#include <memory>
 
 namespace ChemiaAion
 {
@@ -25,6 +28,8 @@ enum NodesState : uint32_t
     NodesState_SelectedConnection
 };
 
+struct Node;
+struct Connection;
 struct NodesElement
 {
     NodesState state_;
@@ -50,6 +55,10 @@ struct NodesElement
         node_ = nullptr;
         connection_ = nullptr;
     }
+
+    void UpdateState(ImVec2 offset,
+                     const ImVec2 &canvas_size_, const ImVec2 &canvas_mouse_, float canvas_scale_,
+                     std::vector<std::unique_ptr<Node>> &nodes_);
 };
 
 } // namespace ChemiaAion
