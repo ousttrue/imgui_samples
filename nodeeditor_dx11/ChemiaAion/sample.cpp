@@ -5,7 +5,7 @@ namespace ChemiaAion
 {
     void NodeEditor()
     {
-        static ImGui::Nodes nodes_;
+        static ChemiaAion::Nodes nodes_;
         ImGui::Begin("Nodes");
         nodes_.ProcessNodes();
         ImGui::End();
