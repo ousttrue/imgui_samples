@@ -16,7 +16,6 @@ ADD_DEFINITIONS(
     -D_UNICODE
     -DNOMINMAX
     -DIM3D_VERTEX_ALIGNMENT=16
-    -DIMGUI_DEFINE_MATH_OPERATORS
     )
 ADD_COMPILE_OPTIONS(
     /std:c++latest 
@@ -28,4 +27,5 @@ SUBDIRS(
     im3d_minimum_es3
     im3d_minimum_dx11
     im3d_in_imgui_view_dx11
+    nodeeditor_dx11
     )
