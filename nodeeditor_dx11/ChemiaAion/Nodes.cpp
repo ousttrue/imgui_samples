@@ -1037,106 +1037,9 @@ public:
     }
     ////////////////////////////////////////////////////////////////////////////////
 
-    Node *CreateNodeFromType(ImVec2 pos, const NodeType &type)
-    {
-        auto node = std::make_unique<Node>();
 
-        ////////////////////////////////////////////////////////////////////////////////
 
-        node->id_ = -++id_;
-        node->name_ = type.name_ + std::to_string(id_).c_str();
-        node->position_ = pos;
-
-        {
-            auto &inputs = node->inputs_;
-            std::for_each(
-                type.inputs_.begin(),
-                type.inputs_.end(),
-                [&inputs](auto &element) {
-                    auto connection = std::make_unique<Connection>();
-                    connection->name_ = element.first;
-                    connection->type_ = element.second;
-
-                    inputs.push_back(std::move(connection));
-                });
-
-            auto &outputs = node->outputs_;
-            std::for_each(
-                type.outputs_.begin(),
-                type.outputs_.end(),
-                [&outputs](auto &element) {
-                    auto connection = std::make_unique<Connection>();
-                    connection->name_ = element.first;
-                    connection->type_ = element.second;
-
-                    outputs.push_back(std::move(connection));
-                });
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        ImVec2 title_size = ImGui::CalcTextSize(node->name_.c_str());
-
-        const float vertical_padding = 1.5f;
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        ImVec2 inputs_size;
-        for (auto &connection : node->inputs_)
-        {
-            ImVec2 name_size = ImGui::CalcTextSize(connection->name_.c_str());
-            inputs_size.x = ImMax(inputs_size.x, name_size.x);
-            inputs_size.y += name_size.y * vertical_padding;
-        }
-
-        ImVec2 outputs_size;
-        for (auto &connection : node->outputs_)
-        {
-            ImVec2 name_size = ImGui::CalcTextSize(connection->name_.c_str());
-            outputs_size.x = ImMax(outputs_size.x, name_size.x);
-            outputs_size.y += name_size.y * vertical_padding;
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        node->size_.x = ImMax((inputs_size.x + outputs_size.x), title_size.x);
-        node->size_.x += title_size.y * 6.0f;
-
-        node->collapsed_height = (title_size.y * 2.0f);
-        node->full_height = (title_size.y * 3.0f) + ImMax(inputs_size.y, outputs_size.y);
-
-        node->size_.y = node->full_height;
-
-        node->position_ -= node->size_ / 2.0f;
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        inputs_size = ImVec2(title_size.y * 0.75f, title_size.y * 2.5f);
-        for (auto &connection : node->inputs_)
-        {
-            const float half = ((ImGui::CalcTextSize(connection->name_.c_str()).y * vertical_padding) / 2.0f);
-
-            inputs_size.y += half;
-            connection->position_ = ImVec2(inputs_size.x, inputs_size.y);
-            inputs_size.y += half;
-        }
-
-        outputs_size = ImVec2(node->size_.x - (title_size.y * 0.75f), title_size.y * 2.5f);
-        for (auto &connection : node->outputs_)
-        {
-            const float half = ((ImGui::CalcTextSize(connection->name_.c_str()).y * vertical_padding) / 2.0f);
-
-            outputs_size.y += half;
-            connection->position_ = ImVec2(outputs_size.x, outputs_size.y);
-            outputs_size.y += half;
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        nodes_.push_back(std::move(node));
-        return nodes_.back().get();
-    }
-
+public:
     void ProcessNodes()
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -1215,56 +1118,15 @@ public:
                     if (ImGui::MenuItem(node.name_.c_str()))
                     {
                         element_.Reset();
-                        element_.node_ = CreateNodeFromType((canvas_mouse_ - canvas_scroll_) / canvas_scale_, node);
+                        auto n = Node::Create((canvas_mouse_ - canvas_scroll_) / canvas_scale_, node, ++id_);
+                        nodes_.push_back(std::move(n));
+                        element_.node_ = nodes_.back().get();
                     }
                 }
                 ImGui::EndPopup();
             }
             ImGui::PopStyleVar();
         }
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        //		{
-        //			ImGui::SetCursorScreenPos(canvas_position_);
-        //
-        //			switch (element_.state_)
-        //			{
-        //				case NodesState_Default: ImGui::Text("NodesState_Default"); break;
-        //				case NodesState_Block: ImGui::Text("NodesState_Block"); break;
-        //				case NodesState_HoverIO: ImGui::Text("NodesState_HoverIO"); break;
-        //				case NodesState_HoverConnection: ImGui::Text("NodesState_HoverConnection"); break;
-        //				case NodesState_HoverNode: ImGui::Text("NodesState_HoverNode"); break;
-        //				case NodesState_DragingInput: ImGui::Text("NodesState_DragingInput"); break;
-        //				case NodesState_DragingInputValid: ImGui::Text("NodesState_DragingInputValid"); break;
-        //				case NodesState_DragingOutput: ImGui::Text("NodesState_DragingOutput"); break;
-        //				case NodesState_DragingOutputValid: ImGui::Text("NodesState_DragingOutputValid"); break;
-        //				case NodesState_DragingConnection: ImGui::Text("NodesState_DragingConnection"); break;
-        //				case NodesState_DragingSelected: ImGui::Text("NodesState_DragingSelected"); break;
-        //				case NodesState_SelectingEmpty: ImGui::Text("NodesState_SelectingEmpty"); break;
-        //				case NodesState_SelectingValid: ImGui::Text("NodesState_SelectingValid"); break;
-        //				case NodesState_SelectingMore: ImGui::Text("NodesState_SelectingMore"); break;
-        //				case NodesState_Selected: ImGui::Text("NodesState_Selected"); break;
-        //				case NodesState_SelectedConnection: ImGui::Text("NodesState_SelectedConnection"); break;
-        //				default: ImGui::Text("UNKNOWN"); break;
-        //			}
-        //
-        //			ImGui::Text("");
-        //
-        //			ImGui::Text("Mouse: %.2f, %.2f", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
-        //			ImGui::Text("Mouse delta: %.2f, %.2f", ImGui::GetIO().MouseDelta.x, ImGui::GetIO().MouseDelta.y);
-        //			ImGui::Text("Offset: %.2f, %.2f", offset.x, offset.y);
-        //
-        //			ImGui::Text("");
-        //
-        //			ImGui::Text("Canvas_mouse: %.2f, %.2f", canvas_mouse_.x, canvas_mouse_.y);
-        //			ImGui::Text("Canvas_position: %.2f, %.2f", canvas_position_.x, canvas_position_.y);
-        //			ImGui::Text("Canvas_size: %.2f, %.2f", canvas_size_.x, canvas_size_.y);
-        //			ImGui::Text("Canvas_scroll: %.2f, %.2f", canvas_scroll_.x, canvas_scroll_.y);
-        //			ImGui::Text("Canvas_scale: %.2f", canvas_scale_);
-        //		}
-
-        ////////////////////////////////////////////////////////////////////////////////
     }
 };
 

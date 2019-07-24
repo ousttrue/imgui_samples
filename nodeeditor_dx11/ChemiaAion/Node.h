@@ -1,5 +1,9 @@
 #pragma once
 #include "Connection.h"
+#include <imgui.h>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace ChemiaAion
 {
@@ -43,6 +47,8 @@ struct Node
     {
         return this;
     }
+
+    static std::unique_ptr<Node> Create(ImVec2 pos, const NodeType &type, int32_t id);
 };
 
 } // namespace ChemiaAnion
