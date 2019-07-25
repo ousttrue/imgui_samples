@@ -2,9 +2,12 @@
 #include <imgui.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
+#include <plog/Log.h>
 
 const float NODE_SLOT_RADIUS = 4.0f;
 const ImVec2 NODE_WINDOW_PADDING(8.0f, 8.0f);
+const float MIN_SCALING = 0.3f;
+const float MAX_SCALING = 2.0f;
 
 struct Context
 {
@@ -68,20 +71,20 @@ struct Node
         ImGui::PopID();
     }
 
-    ImVec2 GetInputSlotPos(int slot_no) const
+    ImVec2 GetInputSlotPos(int slot_no, float scaling) const
     {
-        return ImVec2(Pos.x, Pos.y + Size.y * ((float)slot_no + 1) / ((float)InputsCount + 1));
+        return ImVec2(Pos.x * scaling, Pos.y * scaling + Size.y * ((float)slot_no + 1) / ((float)InputsCount + 1));
     }
-    ImVec2 GetOutputSlotPos(int slot_no) const
+    ImVec2 GetOutputSlotPos(int slot_no, float scaling) const
     {
-        return ImVec2(Pos.x + Size.x, Pos.y + Size.y * ((float)slot_no + 1) / ((float)OutputsCount + 1));
+        return ImVec2(Pos.x * scaling + Size.x, Pos.y * scaling + Size.y * ((float)slot_no + 1) / ((float)OutputsCount + 1));
     }
 
-    void Draw(ImDrawList *draw_list, const ImVec2 &offset, Context *context, int *node_selected)
+    void Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context, int *node_selected, float scaling)
     {
         // Node *node = &nodes[node_idx];
         ImGui::PushID(ID);
-        ImVec2 node_rect_min = offset + Pos;
+        ImVec2 node_rect_min = offset + Pos * scaling;
 
         // Display node contents first
         draw_list->ChannelsSetCurrent(1); // Foreground
@@ -111,15 +114,21 @@ struct Node
         if (node_widgets_active || node_moving_active)
             *node_selected = ID;
         if (node_moving_active && ImGui::IsMouseDragging(0))
-            Pos = Pos + ImGui::GetIO().MouseDelta;
+        {
+            Pos = Pos + ImGui::GetIO().MouseDelta / scaling;
+        }
 
         ImU32 node_bg_color = GetBGColor(*context, *node_selected);
         draw_list->AddRectFilled(node_rect_min, node_rect_max, node_bg_color, 4.0f);
         draw_list->AddRect(node_rect_min, node_rect_max, IM_COL32(100, 100, 100, 255), 4.0f);
         for (int slot_idx = 0; slot_idx < InputsCount; slot_idx++)
-            draw_list->AddCircleFilled(offset + GetInputSlotPos(slot_idx), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+        {
+            draw_list->AddCircleFilled(offset + GetInputSlotPos(slot_idx, scaling), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+        }
         for (int slot_idx = 0; slot_idx < OutputsCount; slot_idx++)
-            draw_list->AddCircleFilled(offset + GetOutputSlotPos(slot_idx), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+        {
+            draw_list->AddCircleFilled(offset + GetOutputSlotPos(slot_idx, scaling), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+        }
 
         ImGui::PopID();
     }
@@ -151,7 +160,8 @@ class Nodes
 {
     ImVector<Node> nodes;
     ImVector<NodeLink> links;
-    ImVec2 scrolling = ImVec2(0.0f, 0.0f);
+    ImVec2 m_scrolling = ImVec2(0.0f, 0.0f);
+    float m_scaling = 1.0f;
     bool m_show_grid = true;
     int node_selected = -1;
 
@@ -179,16 +189,21 @@ public:
         ImGui::EndChild();
     }
 
-    void DrawGrid(ImDrawList *draw_list)
+    void DrawGrid(ImDrawList *draw_list, const ImVec2 &_scrolling)
     {
         ImU32 GRID_COLOR = IM_COL32(200, 200, 200, 40);
-        float GRID_SZ = 64.0f;
+        float GRID_SZ = 64.0f * m_scaling;
         ImVec2 win_pos = ImGui::GetCursorScreenPos();
         ImVec2 canvas_sz = ImGui::GetWindowSize();
+        auto scrolling = _scrolling;
         for (float x = fmodf(scrolling.x, GRID_SZ); x < canvas_sz.x; x += GRID_SZ)
+        {
             draw_list->AddLine(ImVec2(x, 0.0f) + win_pos, ImVec2(x, canvas_sz.y) + win_pos, GRID_COLOR);
+        }
         for (float y = fmodf(scrolling.y, GRID_SZ); y < canvas_sz.y; y += GRID_SZ)
+        {
             draw_list->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, GRID_COLOR);
+        }
     }
 
     void ContextMenu(Context *context, const ImVec2 &offset)
@@ -245,22 +260,30 @@ public:
     void ShowRightPanelHeader()
     {
         // right header
-        ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", scrolling.x, scrolling.y);
-        ImGui::SameLine(ImGui::GetWindowWidth() - 100);
+        ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", m_scrolling.x, m_scrolling.y);
+
+        ImGui::SameLine();
         ImGui::Checkbox("Show grid", &m_show_grid);
+
+        ImGui::SameLine();
+        ImGui::PushItemWidth(-100);
+        ImGui::SliderFloat("zoom", &m_scaling, MIN_SCALING, MAX_SCALING, "%0.2f");
     }
 
+    ///
+    /// Canvas
+    ///
     void ShowRightPanelCanvas(Context *context)
     {
         // スクロールを加味したcanvasの原点
-        ImVec2 offset = ImGui::GetCursorScreenPos() + scrolling;
+        ImVec2 offset = ImGui::GetCursorScreenPos() + m_scrolling;
 
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
         // Display grid
         if (m_show_grid)
         {
-            DrawGrid(draw_list);
+            DrawGrid(draw_list, m_scrolling);
         }
 
         {
@@ -272,15 +295,16 @@ public:
                 NodeLink *link = &links[link_idx];
                 Node *node_inp = &nodes[link->InputIdx];
                 Node *node_out = &nodes[link->OutputIdx];
-                ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link->InputSlot);
-                ImVec2 p2 = offset + node_out->GetInputSlotPos(link->OutputSlot);
-                draw_list->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, IM_COL32(200, 200, 100, 255), 3.0f);
+                ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link->InputSlot, m_scaling);
+                ImVec2 p2 = offset + node_out->GetInputSlotPos(link->OutputSlot, m_scaling);
+                draw_list->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, IM_COL32(200, 200, 100, 255), 3.0f * m_scaling);
             }
 
             // Display nodes
             for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
             {
-                nodes[node_idx].Draw(draw_list, offset, context, &node_selected);
+                // move, draw
+                nodes[node_idx].Process(draw_list, offset, context, &node_selected, m_scaling);
             }
             draw_list->ChannelsMerge();
         }
@@ -288,9 +312,24 @@ public:
         // Open context menu
         ContextMenu(context, offset);
         // Scrolling
-        if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(2, 0.0f))
+        if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive())
         {
-            scrolling = scrolling + ImGui::GetIO().MouseDelta;
+            if (ImGui::IsMouseDragging(2, 0.0f))
+            {
+                m_scrolling = m_scrolling + ImGui::GetIO().MouseDelta;
+            }
+            auto io = ImGui::GetIO();
+            if (io.MouseWheel > 0)
+            {
+                //m_scaling *= 1.25f;
+                m_scaling += 0.1f;
+            }
+            else if (io.MouseWheel < 0)
+            {
+                //m_scaling *= 0.8f;
+                m_scaling -= 0.1f;
+            }
+            m_scaling = std::clamp(m_scaling, MIN_SCALING, MAX_SCALING);
         }
     }
 
@@ -303,9 +342,14 @@ public:
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, IM_COL32(60, 60, 70, 200));
         ImGui::BeginChild("scrolling_region", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
-        ImGui::PushItemWidth(120.0f);
+        ImGui::PushItemWidth(120.0f * m_scaling);
 
+        auto backup = ImGui::GetStyle();
+        ImGui::GetStyle().ScaleAllSizes(m_scaling);
+        ImGui::SetWindowFontScale(m_scaling);
         ShowRightPanelCanvas(context);
+        ImGui::SetWindowFontScale(1.0f);
+        ImGui::GetStyle() = backup;
 
         ImGui::PopItemWidth();
         ImGui::EndChild();
