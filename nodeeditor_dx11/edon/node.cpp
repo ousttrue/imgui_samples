@@ -7,10 +7,8 @@ const float NODE_SLOT_RADIUS = 4.0f;
 namespace edon
 {
 Node::Node(int id, const char *name, const ImVec2 &pos, float value, const ImVec4 &color, int inputs_count, int outputs_count)
+    : m_id(id), m_name(name)
 {
-    ID = id;
-    strncpy(Name, name, 31);
-    Name[31] = 0;
     Pos = pos;
     Value = value;
     Color = color;
@@ -20,7 +18,7 @@ Node::Node(int id, const char *name, const ImVec2 &pos, float value, const ImVec
 
 ImColor Node::GetBGColor(const Context &context, int node_selected) const
 {
-    if (context.IsHovered(ID) || (context.node_hovered_in_list == -1 && node_selected == ID))
+    if (context.IsHovered(m_id) || (context.node_hovered_in_list == -1 && node_selected == m_id))
     {
         return IM_COL32(75, 75, 75, 255);
     }
@@ -32,14 +30,14 @@ ImColor Node::GetBGColor(const Context &context, int node_selected) const
 
 void Node::DrawLeftPanel(int *node_selected, Context *context)
 {
-    ImGui::PushID(ID);
-    if (ImGui::Selectable(Name, ID == *node_selected))
+    ImGui::PushID(m_id);
+    if (ImGui::Selectable(m_name.c_str(), m_id == *node_selected))
     {
-        *node_selected = ID;
+        *node_selected = m_id;
     }
     if (ImGui::IsItemHovered())
     {
-        context->node_hovered_in_list = ID;
+        context->node_hovered_in_list = m_id;
         (context->open_context_menu) |= ImGui::IsMouseClicked(1);
     }
     ImGui::PopID();
@@ -58,7 +56,7 @@ ImVec2 Node::GetOutputSlotPos(int slot_no, float scaling) const
 void Node::Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context, int *node_selected, float scaling)
 {
     // Node *node = &nodes[node_idx];
-    ImGui::PushID(ID);
+    ImGui::PushID(m_id);
     ImVec2 node_rect_min = offset + Pos * scaling;
 
     // Display node contents first
@@ -66,7 +64,7 @@ void Node::Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context
     bool old_any_active = ImGui::IsAnyItemActive();
     ImGui::SetCursorScreenPos(node_rect_min + NODE_WINDOW_PADDING);
     ImGui::BeginGroup(); // Lock horizontal position
-    ImGui::Text("%s", Name);
+    ImGui::Text("%s", m_name.c_str());
     ImGui::SliderFloat("##value", &Value, 0.0f, 1.0f, "Alpha %.2f");
     ImGui::ColorEdit3("##color", &Color.x);
     ImGui::EndGroup();
@@ -82,12 +80,12 @@ void Node::Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context
     ImGui::InvisibleButton("node", Size);
     if (ImGui::IsItemHovered())
     {
-        context->node_hovered_in_scene = ID;
+        context->node_hovered_in_scene = m_id;
         context->open_context_menu |= ImGui::IsMouseClicked(1);
     }
     bool node_moving_active = ImGui::IsItemActive();
     if (node_widgets_active || node_moving_active)
-        *node_selected = ID;
+        *node_selected = m_id;
     if (node_moving_active && ImGui::IsMouseDragging(0))
     {
         Pos = Pos + ImGui::GetIO().MouseDelta / scaling;

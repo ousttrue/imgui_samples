@@ -2,6 +2,7 @@
 #include <imgui.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
+#include <string>
 
 namespace edon
 {
@@ -9,8 +10,8 @@ namespace edon
 struct Context;
 struct Node
 {
-    int ID;
-    char Name[32];
+    int m_id;
+    std::string m_name;
     ImVec2 Pos, Size;
     float Value;
     ImVec4 Color;

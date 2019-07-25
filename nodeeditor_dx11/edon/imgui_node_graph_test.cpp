@@ -106,7 +106,7 @@ public:
             ImVec2 scene_pos = ImGui::GetMousePosOnOpeningCurrentPopup() - offset;
             if (node)
             {
-                ImGui::Text("Node '%s'", node->Name);
+                ImGui::Text("Node '%s'", node->m_name.c_str());
                 ImGui::Separator();
                 if (ImGui::MenuItem("Rename..", NULL, false, false))
                 {
