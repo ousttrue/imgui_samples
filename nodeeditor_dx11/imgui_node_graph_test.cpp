@@ -191,69 +191,20 @@ public:
             draw_list->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, GRID_COLOR);
     }
 
-    void Show()
+    void ContextMenu(Context *context, const ImVec2 &offset)
     {
-        Context context;
-
-        ShowLeftPanel(&context);
-
-        ImGui::SameLine();
-        ImGui::BeginGroup();
-
-        // right header
-        ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", scrolling.x, scrolling.y);
-        ImGui::SameLine(ImGui::GetWindowWidth() - 100);
-        ImGui::Checkbox("Show grid", &m_show_grid);
-
-        // Create our child canvas
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, IM_COL32(60, 60, 70, 200));
-        ImGui::BeginChild("scrolling_region", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
-        ImGui::PushItemWidth(120.0f);
-
-        ImVec2 offset = ImGui::GetCursorScreenPos() + scrolling;
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-
-        // Display grid
-        if (m_show_grid)
-        {
-            DrawGrid(draw_list);
-        }
-
-        // Display links
-        draw_list->ChannelsSplit(2);
-        draw_list->ChannelsSetCurrent(0); // Background
-        for (int link_idx = 0; link_idx < links.Size; link_idx++)
-        {
-            NodeLink *link = &links[link_idx];
-            Node *node_inp = &nodes[link->InputIdx];
-            Node *node_out = &nodes[link->OutputIdx];
-            ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link->InputSlot);
-            ImVec2 p2 = offset + node_out->GetInputSlotPos(link->OutputSlot);
-            draw_list->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, IM_COL32(200, 200, 100, 255), 3.0f);
-        }
-
-        // Display nodes
-        for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
-        {
-            nodes[node_idx].Draw(draw_list, offset, &context, &node_selected);
-        }
-        draw_list->ChannelsMerge();
-
-        // Open context menu
         if (!ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered() && ImGui::IsMouseClicked(1))
         {
-            node_selected = context.node_hovered_in_list = context.node_hovered_in_scene = -1;
-            context.open_context_menu = true;
+            node_selected = context->node_hovered_in_list = context->node_hovered_in_scene = -1;
+            context->open_context_menu = true;
         }
-        if (context.open_context_menu)
+        if (context->open_context_menu)
         {
             ImGui::OpenPopup("context_menu");
-            if (context.node_hovered_in_list != -1)
-                node_selected = context.node_hovered_in_list;
-            if (context.node_hovered_in_scene != -1)
-                node_selected = context.node_hovered_in_scene;
+            if (context->node_hovered_in_list != -1)
+                node_selected = context->node_hovered_in_list;
+            if (context->node_hovered_in_scene != -1)
+                node_selected = context->node_hovered_in_scene;
         }
 
         // Draw context menu
@@ -289,15 +240,88 @@ public:
             ImGui::EndPopup();
         }
         ImGui::PopStyleVar();
+    }
 
+    void ShowRightPanelHeader()
+    {
+        // right header
+        ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", scrolling.x, scrolling.y);
+        ImGui::SameLine(ImGui::GetWindowWidth() - 100);
+        ImGui::Checkbox("Show grid", &m_show_grid);
+    }
+
+    void ShowRightPanelCanvas(Context *context)
+    {
+        // スクロールを加味したcanvasの原点
+        ImVec2 offset = ImGui::GetCursorScreenPos() + scrolling;
+
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+
+        // Display grid
+        if (m_show_grid)
+        {
+            DrawGrid(draw_list);
+        }
+
+        {
+            draw_list->ChannelsSplit(2);
+            draw_list->ChannelsSetCurrent(0); // Background
+            // Display links
+            for (int link_idx = 0; link_idx < links.Size; link_idx++)
+            {
+                NodeLink *link = &links[link_idx];
+                Node *node_inp = &nodes[link->InputIdx];
+                Node *node_out = &nodes[link->OutputIdx];
+                ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link->InputSlot);
+                ImVec2 p2 = offset + node_out->GetInputSlotPos(link->OutputSlot);
+                draw_list->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, IM_COL32(200, 200, 100, 255), 3.0f);
+            }
+
+            // Display nodes
+            for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
+            {
+                nodes[node_idx].Draw(draw_list, offset, context, &node_selected);
+            }
+            draw_list->ChannelsMerge();
+        }
+
+        // Open context menu
+        ContextMenu(context, offset);
         // Scrolling
         if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(2, 0.0f))
+        {
             scrolling = scrolling + ImGui::GetIO().MouseDelta;
+        }
+    }
+
+    void ShowRightPanel(Context *context)
+    {
+        ShowRightPanelHeader();
+
+        // Create our child canvas
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, IM_COL32(60, 60, 70, 200));
+        ImGui::BeginChild("scrolling_region", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
+        ImGui::PushItemWidth(120.0f);
+
+        ShowRightPanelCanvas(context);
 
         ImGui::PopItemWidth();
         ImGui::EndChild();
         ImGui::PopStyleColor();
         ImGui::PopStyleVar(2);
+    }
+
+    void Show()
+    {
+        Context context;
+
+        ShowLeftPanel(&context);
+
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        ShowRightPanel(&context);
         ImGui::EndGroup();
     }
 };

@@ -62,8 +62,10 @@ int main(int argc, char **argv)
         ImGui::NewFrame();
 
         // camera update
-        camera.WindowInput(windowState);
-
+        if (!ImGui::IsAnyWindowHovered())
+        {
+            camera.WindowInput(windowState);
+        }
 
         NodeEditor();
         ChemiaAion::NodeEditor();
