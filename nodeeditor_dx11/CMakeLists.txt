@@ -4,6 +4,7 @@ FILE(GLOB SRC
     *.cpp
     spacechase0/*.cpp
     ChemiaAion/*.cpp
+    edon/*.cpp
     ) 
 ADD_EXECUTABLE(${SUB_NAME}
     ${SRC}

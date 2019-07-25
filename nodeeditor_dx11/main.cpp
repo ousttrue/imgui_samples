@@ -11,7 +11,7 @@
 
 #include "spacechase0/sample.h"
 #include "ChemiaAion/sample.h"
-#include "imgui_node_graph_test.h"
+#include "edon/imgui_node_graph_test.h"
 
 int main(int argc, char **argv)
 {
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         // camera update
         if (!ImGui::IsAnyWindowHovered())
         {
-            camera.WindowInput(windowState);
+        camera.WindowInput(windowState);
         }
 
         NodeEditor();
