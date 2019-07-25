@@ -57,7 +57,6 @@ struct Node
 
     void DrawLeftPanel(int *node_selected, Context *context)
     {
-        // Node *node = &nodes[node_idx];
         ImGui::PushID(ID);
         if (ImGui::Selectable(Name, ID == *node_selected))
         {
@@ -158,21 +157,21 @@ struct NodeLink
 
 class Nodes
 {
-    ImVector<Node> nodes;
-    ImVector<NodeLink> links;
+    ImVector<Node> m_nodes;
+    ImVector<NodeLink> m_links;
     ImVec2 m_scrolling = ImVec2(0.0f, 0.0f);
     float m_scaling = 1.0f;
     bool m_show_grid = true;
-    int node_selected = -1;
+    int m_node_selected = -1;
 
 public:
     Nodes()
     {
-        nodes.push_back(Node(0, "MainTex", ImVec2(40, 50), 0.5f, ImColor(255, 100, 100), 1, 1));
-        nodes.push_back(Node(1, "BumpMap", ImVec2(40, 150), 0.42f, ImColor(200, 100, 200), 1, 1));
-        nodes.push_back(Node(2, "Combine", ImVec2(270, 80), 1.0f, ImColor(0, 200, 100), 2, 2));
-        links.push_back(NodeLink(0, 0, 2, 0));
-        links.push_back(NodeLink(1, 0, 2, 1));
+        m_nodes.push_back(Node(0, "MainTex", ImVec2(40, 50), 0.5f, ImColor(255, 100, 100), 1, 1));
+        m_nodes.push_back(Node(1, "BumpMap", ImVec2(40, 150), 0.42f, ImColor(200, 100, 200), 1, 1));
+        m_nodes.push_back(Node(2, "Combine", ImVec2(270, 80), 1.0f, ImColor(0, 200, 100), 2, 2));
+        m_links.push_back(NodeLink(0, 0, 2, 0));
+        m_links.push_back(NodeLink(1, 0, 2, 1));
     }
 
     void ShowLeftPanel(Context *context)
@@ -182,9 +181,9 @@ public:
         ImGui::Text("Nodes");
         ImGui::Separator();
 
-        for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
+        for (int node_idx = 0; node_idx < m_nodes.Size; node_idx++)
         {
-            nodes[node_idx].DrawLeftPanel(&node_selected, context);
+            m_nodes[node_idx].DrawLeftPanel(&m_node_selected, context);
         }
         ImGui::EndChild();
     }
@@ -210,23 +209,23 @@ public:
     {
         if (!ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered() && ImGui::IsMouseClicked(1))
         {
-            node_selected = context->node_hovered_in_list = context->node_hovered_in_scene = -1;
+            m_node_selected = context->node_hovered_in_list = context->node_hovered_in_scene = -1;
             context->open_context_menu = true;
         }
         if (context->open_context_menu)
         {
             ImGui::OpenPopup("context_menu");
             if (context->node_hovered_in_list != -1)
-                node_selected = context->node_hovered_in_list;
+                m_node_selected = context->node_hovered_in_list;
             if (context->node_hovered_in_scene != -1)
-                node_selected = context->node_hovered_in_scene;
+                m_node_selected = context->node_hovered_in_scene;
         }
 
         // Draw context menu
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
         if (ImGui::BeginPopup("context_menu"))
         {
-            Node *node = node_selected != -1 ? &nodes[node_selected] : NULL;
+            Node *node = m_node_selected != -1 ? &m_nodes[m_node_selected] : NULL;
             ImVec2 scene_pos = ImGui::GetMousePosOnOpeningCurrentPopup() - offset;
             if (node)
             {
@@ -246,7 +245,7 @@ public:
             {
                 if (ImGui::MenuItem("Add"))
                 {
-                    nodes.push_back(Node(nodes.Size, "New node", scene_pos, 0.5f, ImColor(100, 100, 200), 2, 2));
+                    m_nodes.push_back(Node(m_nodes.Size, "New node", scene_pos, 0.5f, ImColor(100, 100, 200), 2, 2));
                 }
                 if (ImGui::MenuItem("Paste", NULL, false, false))
                 {
@@ -290,21 +289,21 @@ public:
             draw_list->ChannelsSplit(2);
             draw_list->ChannelsSetCurrent(0); // Background
             // Display links
-            for (int link_idx = 0; link_idx < links.Size; link_idx++)
+            for (int link_idx = 0; link_idx < m_links.Size; link_idx++)
             {
-                NodeLink *link = &links[link_idx];
-                Node *node_inp = &nodes[link->InputIdx];
-                Node *node_out = &nodes[link->OutputIdx];
+                NodeLink *link = &m_links[link_idx];
+                Node *node_inp = &m_nodes[link->InputIdx];
+                Node *node_out = &m_nodes[link->OutputIdx];
                 ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link->InputSlot, m_scaling);
                 ImVec2 p2 = offset + node_out->GetInputSlotPos(link->OutputSlot, m_scaling);
                 draw_list->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, IM_COL32(200, 200, 100, 255), 3.0f * m_scaling);
             }
 
             // Display nodes
-            for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
+            for (int node_idx = 0; node_idx < m_nodes.Size; node_idx++)
             {
                 // move, draw
-                nodes[node_idx].Process(draw_list, offset, context, &node_selected, m_scaling);
+                m_nodes[node_idx].Process(draw_list, offset, context, &m_node_selected, m_scaling);
             }
             draw_list->ChannelsMerge();
         }
