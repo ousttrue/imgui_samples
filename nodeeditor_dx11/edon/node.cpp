@@ -6,10 +6,9 @@ const float NODE_SLOT_RADIUS = 4.0f;
 
 namespace edon
 {
-Node::Node(int id, const char *name, const ImVec2 &pos, float value, const ImVec4 &color, int inputs_count, int outputs_count)
-    : m_id(id), m_name(name)
+Node::Node(int id, const char *name, const std::array<float, 2> &pos, float value, const ImVec4 &color, int inputs_count, int outputs_count)
+    : m_id(id), m_name(name), m_pos(pos)
 {
-    Pos = pos;
     Value = value;
     Color = color;
     InputsCount = inputs_count;
@@ -45,19 +44,19 @@ void Node::DrawLeftPanel(int *node_selected, Context *context)
 
 ImVec2 Node::GetInputSlotPos(int slot_no, float scaling) const
 {
-    return ImVec2(Pos.x * scaling, Pos.y * scaling + Size.y * ((float)slot_no + 1) / ((float)InputsCount + 1));
+    return ImVec2(m_pos[0] * scaling, m_pos[1] * scaling + m_size[1] * ((float)slot_no + 1) / ((float)InputsCount + 1));
 }
 
 ImVec2 Node::GetOutputSlotPos(int slot_no, float scaling) const
 {
-    return ImVec2(Pos.x * scaling + Size.x, Pos.y * scaling + Size.y * ((float)slot_no + 1) / ((float)OutputsCount + 1));
+    return ImVec2(m_pos[0] * scaling + m_size[0], m_pos[1] * scaling + m_size[1] * ((float)slot_no + 1) / ((float)OutputsCount + 1));
 }
 
 void Node::Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context, int *node_selected, float scaling)
 {
     // Node *node = &nodes[node_idx];
     ImGui::PushID(m_id);
-    ImVec2 node_rect_min = offset + Pos * scaling;
+    ImVec2 node_rect_min = offset + *(ImVec2 *)&m_pos * scaling;
 
     // Display node contents first
     draw_list->ChannelsSetCurrent(1); // Foreground
@@ -71,13 +70,15 @@ void Node::Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context
 
     // Save the size of what we have emitted and whether any of the widgets are being used
     bool node_widgets_active = (!old_any_active && ImGui::IsAnyItemActive());
-    Size = ImGui::GetItemRectSize() + NODE_WINDOW_PADDING + NODE_WINDOW_PADDING;
-    ImVec2 node_rect_max = node_rect_min + Size;
+    auto size = ImGui::GetItemRectSize() + NODE_WINDOW_PADDING + NODE_WINDOW_PADDING;
+    m_size[0] = size.x;
+    m_size[1] = size.y;
+    ImVec2 node_rect_max = node_rect_min + size;
 
     // Display node box
     draw_list->ChannelsSetCurrent(0); // Background
     ImGui::SetCursorScreenPos(node_rect_min);
-    ImGui::InvisibleButton("node", Size);
+    ImGui::InvisibleButton("node", size);
     if (ImGui::IsItemHovered())
     {
         context->node_hovered_in_scene = m_id;
@@ -88,7 +89,8 @@ void Node::Process(ImDrawList *draw_list, const ImVec2 &offset, Context *context
         *node_selected = m_id;
     if (node_moving_active && ImGui::IsMouseDragging(0))
     {
-        Pos = Pos + ImGui::GetIO().MouseDelta / scaling;
+        m_pos[0] += ImGui::GetIO().MouseDelta[0] / scaling;
+        m_pos[1] += ImGui::GetIO().MouseDelta[1] / scaling;
     }
 
     ImU32 node_bg_color = GetBGColor(*context, *node_selected);

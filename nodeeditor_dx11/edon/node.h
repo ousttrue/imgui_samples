@@ -3,6 +3,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 #include <string>
+#include <array>
 
 namespace edon
 {
@@ -12,12 +13,14 @@ struct Node
 {
     int m_id;
     std::string m_name;
-    ImVec2 Pos, Size;
+    std::array<float, 2> m_pos;
+    std::array<float, 2> m_size;
+
     float Value;
     ImVec4 Color;
     int InputsCount, OutputsCount;
 
-    Node(int id, const char *name, const ImVec2 &pos, float value, const ImVec4 &color, int inputs_count, int outputs_count);
+    Node(int id, const char *name, const std::array<float, 2> &pos, float value, const ImVec4 &color, int inputs_count, int outputs_count);
 
     ImColor GetBGColor(const Context &context, int node_selected) const;
 
