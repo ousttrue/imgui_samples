@@ -3,6 +3,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 #include <plog/Log.h>
+#include <vector>
 
 const float NODE_SLOT_RADIUS = 4.0f;
 const ImVec2 NODE_WINDOW_PADDING(8.0f, 8.0f);
@@ -157,8 +158,8 @@ struct NodeLink
 
 class Nodes
 {
-    ImVector<Node> m_nodes;
-    ImVector<NodeLink> m_links;
+    std::vector<Node> m_nodes;
+    std::vector<NodeLink> m_links;
     ImVec2 m_scrolling = ImVec2(0.0f, 0.0f);
     float m_scaling = 1.0f;
     bool m_show_grid = true;
@@ -181,9 +182,9 @@ public:
         ImGui::Text("Nodes");
         ImGui::Separator();
 
-        for (int node_idx = 0; node_idx < m_nodes.Size; node_idx++)
+        for (auto &node: m_nodes)
         {
-            m_nodes[node_idx].DrawLeftPanel(&m_node_selected, context);
+            node.DrawLeftPanel(&m_node_selected, context);
         }
         ImGui::EndChild();
     }
@@ -245,7 +246,7 @@ public:
             {
                 if (ImGui::MenuItem("Add"))
                 {
-                    m_nodes.push_back(Node(m_nodes.Size, "New node", scene_pos, 0.5f, ImColor(100, 100, 200), 2, 2));
+                    m_nodes.push_back(Node((int)m_nodes.size(), "New node", scene_pos, 0.5f, ImColor(100, 100, 200), 2, 2));
                 }
                 if (ImGui::MenuItem("Paste", NULL, false, false))
                 {
@@ -289,21 +290,20 @@ public:
             draw_list->ChannelsSplit(2);
             draw_list->ChannelsSetCurrent(0); // Background
             // Display links
-            for (int link_idx = 0; link_idx < m_links.Size; link_idx++)
+            for(auto &link: m_links)
             {
-                NodeLink *link = &m_links[link_idx];
-                Node *node_inp = &m_nodes[link->InputIdx];
-                Node *node_out = &m_nodes[link->OutputIdx];
-                ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link->InputSlot, m_scaling);
-                ImVec2 p2 = offset + node_out->GetInputSlotPos(link->OutputSlot, m_scaling);
+                Node *node_inp = &m_nodes[link.InputIdx];
+                Node *node_out = &m_nodes[link.OutputIdx];
+                ImVec2 p1 = offset + node_inp->GetOutputSlotPos(link.InputSlot, m_scaling);
+                ImVec2 p2 = offset + node_out->GetInputSlotPos(link.OutputSlot, m_scaling);
                 draw_list->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, IM_COL32(200, 200, 100, 255), 3.0f * m_scaling);
             }
 
             // Display nodes
-            for (int node_idx = 0; node_idx < m_nodes.Size; node_idx++)
+            for(auto &node: m_nodes)
             {
                 // move, draw
-                m_nodes[node_idx].Process(draw_list, offset, context, &m_node_selected, m_scaling);
+                node.Process(draw_list, offset, context, &m_node_selected, m_scaling);
             }
             draw_list->ChannelsMerge();
         }
