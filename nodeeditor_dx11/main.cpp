@@ -9,7 +9,7 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h> // d3d11.h
 
-#include "spacechase0/sample.h"
+#include "spacechase0/NodeGraph.hpp"
 #include "ChemiaAion/sample.h"
 #include "edon/imgui_node_graph_test.h"
 
@@ -47,6 +47,8 @@ int main(int argc, char **argv)
     auto world = amth::IdentityMatrix();
     OrbitCamera camera;
 
+    static spacechase0::Graph nodeGraph;
+
     while (window.IsRunning())
     {
         // get window state and mouse input
@@ -67,10 +69,10 @@ int main(int argc, char **argv)
         camera.WindowInput(windowState);
         }
 
-        NodeEditor();
-        ChemiaAion::NodeEditor();
-        static bool showNodeGraph = true;
-        ShowExampleAppCustomNodeGraph(&showNodeGraph);
+        nodeGraph.update();
+        // ChemiaAion::NodeEditor();
+        // static bool showNodeGraph = true;
+        // ShowExampleAppCustomNodeGraph(&showNodeGraph);
 
         //
         // render

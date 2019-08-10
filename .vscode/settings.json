@@ -36,6 +36,7 @@
         "nlohmann",
         "noperspective",
         "pformat",
+        "spacechace",
         "verts",
         "vsync"
     ],
@@ -115,7 +116,8 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "filesystem": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

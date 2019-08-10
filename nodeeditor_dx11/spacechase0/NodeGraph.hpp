@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-namespace NodeGraph
+namespace spacechase0
 {
     enum ConnectionType
     {
@@ -58,6 +58,7 @@ namespace NodeGraph
     class Graph
     {
         public:
+            Graph();
             std::vector< std::unique_ptr< Node > > nodes;
             std::unordered_map< std::string, NodeType > types;
 
