@@ -84,65 +84,65 @@ void Graph::update()
     ImGui::EndChild();
 }
 
-void Graph::deletePressed()
-{
-    if (nodes.size() == 0)
-        return;
+// void Graph::deletePressed()
+// {
+//     if (nodes.size() == 0)
+//         return;
 
-    for (auto &node : nodes)
-    {
-        for (auto &input : node->inputs)
-        {
-            if (input.type() == typeid(Connection))
-            {
-                Connection conn = std::any_cast<Connection>(input);
-                if (!conn.selected)
-                    continue;
+//     for (auto &node : nodes)
+//     {
+//         for (auto &input : node->inputs)
+//         {
+//             if (input.type() == typeid(Connection))
+//             {
+//                 Connection conn = std::any_cast<Connection>(input);
+//                 if (!conn.selected)
+//                     continue;
 
-                conn.other->outputs[conn.index] = std::any();
-                input = std::any();
-            }
-        }
-        for (auto &output : node->outputs)
-        {
-            if (output.type() == typeid(Connection))
-            {
-                Connection conn = std::any_cast<Connection>(output);
-                if (!conn.selected)
-                    continue;
+//                 conn.other->outputs[conn.index] = std::any();
+//                 input = std::any();
+//             }
+//         }
+//         for (auto &output : node->outputs)
+//         {
+//             if (output.type() == typeid(Connection))
+//             {
+//                 Connection conn = std::any_cast<Connection>(output);
+//                 if (!conn.selected)
+//                     continue;
 
-                conn.other->inputs[conn.index] = std::any();
-                output = std::any();
-            }
-        }
-    }
+//                 conn.other->inputs[conn.index] = std::any();
+//                 output = std::any();
+//             }
+//         }
+//     }
 
-    for (int i = (int)nodes.size() - 1; i >= 0; --i)
-    {
-        if (nodes[i]->selected)
-        {
-            for (auto &input : nodes[i]->inputs)
-            {
-                if (input.type() == typeid(Connection))
-                {
-                    Connection conn = std::any_cast<Connection>(input);
-                    conn.other->outputs[conn.index] = std::any();
-                    input = std::any();
-                }
-            }
-            for (auto &output : nodes[i]->outputs)
-            {
-                if (output.type() == typeid(Connection))
-                {
-                    Connection conn = std::any_cast<Connection>(output);
-                    conn.other->inputs[conn.index] = std::any();
-                    output = std::any();
-                }
-            }
-            nodes.erase(nodes.begin() + i);
-        }
-    }
-}
+//     for (int i = (int)nodes.size() - 1; i >= 0; --i)
+//     {
+//         if (nodes[i]->selected)
+//         {
+//             for (auto &input : nodes[i]->inputs)
+//             {
+//                 if (input.type() == typeid(Connection))
+//                 {
+//                     Connection conn = std::any_cast<Connection>(input);
+//                     conn.other->outputs[conn.index] = std::any();
+//                     input = std::any();
+//                 }
+//             }
+//             for (auto &output : nodes[i]->outputs)
+//             {
+//                 if (output.type() == typeid(Connection))
+//                 {
+//                     Connection conn = std::any_cast<Connection>(output);
+//                     conn.other->inputs[conn.index] = std::any();
+//                     output = std::any();
+//                 }
+//             }
+//             nodes.erase(nodes.begin() + i);
+//         }
+//     }
+// }
 
 Graph::Graph()
 {

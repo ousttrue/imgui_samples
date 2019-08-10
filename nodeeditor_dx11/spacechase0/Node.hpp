@@ -44,22 +44,25 @@ struct NodeType
 struct Context;
 struct Node
 {
-public:
+private:
     ImVec2 position;
-
     std::string type;
+    bool collapsed = false;
+
+public:
+    bool selected = false;
 
     std::vector<std::any> inputs;
     std::vector<std::any> outputs;
-
-    bool collapsed = false;
-    bool selected = false;
 
     void Draw(Context *context, ImDrawList *draw, int n, const NodeType &nodeType, const ImVec2 &offset, const ImVec2 &mouse,
               const std::vector<std::unique_ptr<Node>> &nodes,
               const std::unordered_map<std::string, NodeType> &types);
 
 private:
+    void DrawContent(Context *context, ImDrawList *draw, int n, const NodeType &nodeType, const ImVec2 &offset, const ImVec2 &mouse,
+                     const std::vector<std::unique_ptr<Node>> &nodes,
+                     const std::unordered_map<std::string, NodeType> &types);
     void doPinCircle(ImDrawList *draw, ImVec2 pos, ConnectionType connType, bool filled);
     void doPinValue(const std::string &label, ConnectionType connType, std::any &input);
     friend class Graph;

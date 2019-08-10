@@ -22,7 +22,7 @@ public:
     std::unordered_map<std::string, NodeType> types;
 
     void update();
-    void deletePressed();
+    // void deletePressed();
 
 private:
     Context m_context;
