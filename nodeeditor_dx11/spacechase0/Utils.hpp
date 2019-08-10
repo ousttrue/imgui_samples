@@ -56,4 +56,3 @@ inline float GetSquaredDistancePointSegment(const ImVec2 &P, const ImVec2 &S1, c
     return (P.x - T.x) * (P.x - T.x) + (P.y - T.y) * (P.y - T.y);
 }
 
-

@@ -36,6 +36,7 @@
         "mediump",
         "nlohmann",
         "noperspective",
+        "oout",
         "pformat",
         "spacechace",
         "verts",

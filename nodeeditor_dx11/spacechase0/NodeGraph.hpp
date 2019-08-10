@@ -9,34 +9,28 @@
 #include <unordered_map>
 #include <algorithm>
 #include "Node.hpp"
+#include "Context.hpp"
 
 namespace spacechase0
 {
-    class Graph
-    {
-        public:
-            Graph();
-            std::vector< std::unique_ptr< Node > > nodes;
-            std::unordered_map< std::string, NodeType > types;
 
-            ImU32 gridColor = ImColor( 128, 128, 128, 32 );
-            float gridSize = 64;
+class Graph
+{
+public:
+    Graph();
+    std::vector<std::unique_ptr<Node>> nodes;
+    std::unordered_map<std::string, NodeType> types;
 
-            void update();
-            void deletePressed();
+    void update();
+    void deletePressed();
 
-        private:
-            ImVec2 scroll = ImVec2( 0, 0 );
+private:
+    Context m_context;
+    ImVec2 m_scroll = ImVec2(0, 0);
+};
 
-            std::unique_ptr< Connection > connSel;
-            bool connSelInput = false;
+float GetSquaredDistanceToBezierCurve(const ImVec2 &point, const ImVec2 &p1, const ImVec2 &p2, const ImVec2 &p3, const ImVec2 &p4);
 
-            void deselectAll();
-
-            ImU32 getConnectorColor( ConnectionType connType );
-            void doPinCircle( ImDrawList* draw, ImVec2 pos, ConnectionType connType, bool filled );
-            void doPinValue( const std::string& label, ConnectionType connType, std::any& input );
-    };
-}
+} // namespace spacechase0
 
 #endif // NODEGRAPH_HPP
