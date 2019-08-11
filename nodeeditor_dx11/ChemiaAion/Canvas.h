@@ -19,7 +19,7 @@ struct Canvas
     ImVec2 GetOffset() const;
     ImVec2 NewNodePosition() const;
 
-    void Update();
+    ImVec2 Update();
 
 private:
     void DrawGrid();

@@ -18,7 +18,7 @@ ImVec2 Canvas::NewNodePosition() const
     return (canvas_mouse_ - canvas_scroll_) / canvas_scale_;
 }
 
-void Canvas::Update()
+ImVec2 Canvas::Update()
 {
     if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
     {
@@ -30,6 +30,8 @@ void Canvas::Update()
     }
 
     DrawGrid();
+
+    return GetOffset();
 }
 
 void Canvas::DrawGrid()

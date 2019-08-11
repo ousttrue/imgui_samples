@@ -82,15 +82,48 @@ class NodesImpl
         ImGui::SetWindowFontScale(1.0f);
     }
 
-public:
-    void ProcessNodes()
+    void ContextMenu()
     {
-        m_canvas.Update();
+        ImGui::SetCursorScreenPos(m_canvas.canvas_position_);
 
-        ImVec2 offset = m_canvas.GetOffset();
+        bool consider_menu = !ImGui::IsAnyItemHovered();
+        consider_menu &= ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+        consider_menu &= element_.state_ == NodesState_Default || element_.state_ == NodesState_Selected;
+        consider_menu &= ImGui::IsMouseReleased(1);
+
+        if (consider_menu)
+        {
+            ImGuiContext *context = ImGui::GetCurrentContext();
+
+            if (context->IO.MouseDragMaxDistanceSqr[1] < 36.0f)
+            {
+                ImGui::OpenPopup("NodesContextMenu");
+            }
+        }
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+        if (ImGui::BeginPopup("NodesContextMenu"))
+        {
+            element_.Reset(NodesState_Block);
+
+            for (auto &node : nodes_types_)
+            {
+                if (ImGui::MenuItem(node.name_.c_str()))
+                {
+                    element_.Reset();
+                    auto n = Node::Create(m_canvas.NewNodePosition(), node, ++id_);
+                    nodes_.push_back(std::move(n));
+                    element_.node_ = nodes_.back().get();
+                }
+            }
+            ImGui::EndPopup();
+        }
+        ImGui::PopStyleVar();
+    }
+
+    void DisplayCurves(ImDrawList *draw_list, const ImVec2 &offset)
+    {
         element_.UpdateState(offset, m_canvas.canvas_size_, m_canvas.canvas_mouse_, m_canvas.canvas_scale_, nodes_);
-
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
         // connection curve
         for (auto &node : nodes_)
@@ -125,59 +158,26 @@ public:
                 }
             }
         }
+    }
 
+public:
+    void ProcessNodes()
+    {
+        auto offset = m_canvas.Update();
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+        DisplayCurves(draw_list, offset);
         DisplayNodes(draw_list, offset);
 
+        // yellow selecting rect
         if (element_.state_ == NodesState_SelectingEmpty ||
             element_.state_ == NodesState_SelectingValid ||
             element_.state_ == NodesState_SelectingMore)
         {
-            // yellow transparent rect
-            draw_list->AddRectFilled(element_.rectMin_, element_.rectMax_, ImColor(200.0f, 200.0f, 0.0f, 0.1f));
-            draw_list->AddRect(element_.rectMin_, element_.rectMax_, ImColor(200.0f, 200.0f, 0.0f, 0.5f));
+            draw_list->AddRectFilled(element_.rectMin_, element_.rectMax_, ImColor(1.0f, 1.0f, 0.0f, 0.1f));
+            draw_list->AddRect(element_.rectMin_, element_.rectMax_, ImColor(1.0f, 1.0f, 0.0f, 0.5f));
         }
 
-        ////////////////////////////////////////////////////////////////////////////////
-        // Context Menu
-        ////////////////////////////////////////////////////////////////////////////////
-
-        {
-            ImGui::SetCursorScreenPos(m_canvas.canvas_position_);
-
-            bool consider_menu = !ImGui::IsAnyItemHovered();
-            consider_menu &= ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
-            consider_menu &= element_.state_ == NodesState_Default || element_.state_ == NodesState_Selected;
-            consider_menu &= ImGui::IsMouseReleased(1);
-
-            if (consider_menu)
-            {
-                ImGuiContext *context = ImGui::GetCurrentContext();
-
-                if (context->IO.MouseDragMaxDistanceSqr[1] < 36.0f)
-                {
-                    ImGui::OpenPopup("NodesContextMenu");
-                }
-            }
-
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-            if (ImGui::BeginPopup("NodesContextMenu"))
-            {
-                element_.Reset(NodesState_Block);
-
-                for (auto &node : nodes_types_)
-                {
-                    if (ImGui::MenuItem(node.name_.c_str()))
-                    {
-                        element_.Reset();
-                        auto n = Node::Create(m_canvas.NewNodePosition(), node, ++id_);
-                        nodes_.push_back(std::move(n));
-                        element_.node_ = nodes_.back().get();
-                    }
-                }
-                ImGui::EndPopup();
-            }
-            ImGui::PopStyleVar();
-        }
+        ContextMenu();
     }
 };
 
