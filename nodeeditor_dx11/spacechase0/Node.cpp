@@ -169,7 +169,6 @@ void Node::DrawContent(Context *context, ImDrawList *draw, int n, const NodeType
         }
 
         ImGui::SetCursorScreenPos(connPos + ImVec2(20, 0));
-
         ImGui::PushItemWidth(75);
         doPinValue((nodeType.inputs[i].second + "##i" + std::to_string(i)).c_str(), nodeType.inputs[i].first, input);
         ImGui::PopItemWidth();
@@ -283,6 +282,7 @@ void Node::doPinCircle(ImDrawList *draw, ImVec2 pos, ConnectionType connType, bo
         if (filled)
             draw->AddTriangleFilled(pos + ImVec2(1, 4), pos + ImVec2(5, 8), pos + ImVec2(1, 12), getConnectorColor(connType));
         break;
+
     case ConnectionType::Int:
     case ConnectionType::Float:
     case ConnectionType::String:

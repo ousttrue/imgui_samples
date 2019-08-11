@@ -86,48 +86,20 @@ class NodesImpl
 
     void UpdateScroll()
     {
-        ////////////////////////////////////////////////////////////////////////////////
-
         {
             ImVec2 scroll;
-
-            if (ImGui::GetIO().KeyShift && !ImGui::GetIO().KeyCtrl && !ImGui::IsMouseDown(0) && !ImGui::IsMouseDown(1) && !ImGui::IsMouseDown(2))
-            {
-                scroll.x = ImGui::GetIO().MouseWheel * 24.0f;
-            }
-
-            if (!ImGui::GetIO().KeyShift && !ImGui::GetIO().KeyCtrl && !ImGui::IsMouseDown(0) && !ImGui::IsMouseDown(1) && !ImGui::IsMouseDown(2))
-            {
-                scroll.y = ImGui::GetIO().MouseWheel * 24.0f;
-            }
-
-            if (ImGui::IsMouseDragging(1, 6.0f) && !ImGui::IsMouseDown(0) && !ImGui::IsMouseDown(2))
+            if (ImGui::IsMouseDown(2))
             {
                 scroll += ImGui::GetIO().MouseDelta;
             }
-
             canvas_scroll_ += scroll;
         }
 
-        ////////////////////////////////////////////////////////////////////////////////
-
         {
             ImVec2 mouse = canvas_mouse_;
-
             float zoom = 0.0f;
-
-            if (!ImGui::GetIO().KeyShift && !ImGui::IsMouseDown(0) && !ImGui::IsMouseDown(1))
             {
-                if (ImGui::GetIO().KeyCtrl)
-                {
-                    zoom += ImGui::GetIO().MouseWheel;
-                }
-
-                if (ImGui::IsMouseDragging(2, 6.0f))
-                {
-                    zoom -= ImGui::GetIO().MouseDelta.y;
-                    mouse -= ImGui::GetMouseDragDelta(2, 6.0f);
-                }
+                zoom += ImGui::GetIO().MouseWheel;
             }
 
             ImVec2 focus = (mouse - canvas_scroll_) / canvas_scale_;
@@ -259,7 +231,7 @@ public:
         {
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
-            ImU32 color = ImColor(0.5f, 0.5f, 0.5f, 0.1f);
+            ImU32 color = ImColor(0.5f, 0.5f, 0.5f, 0.8f);
             const float size = 64.0f * canvas_scale_;
 
             for (float x = fmodf(canvas_scroll_.x, size); x < canvas_size_.x; x += size)
@@ -349,6 +321,8 @@ Nodes::~Nodes()
 
 void Nodes::ProcessNodes()
 {
+    ImGui::Begin("Nodes");
+
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -360,5 +334,7 @@ void Nodes::ProcessNodes()
     ImGui::EndChild();
     ImGui::PopStyleColor();
     ImGui::PopStyleVar(2);
+    ImGui::End();
 }
+
 } // namespace ChemiaAion
