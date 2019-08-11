@@ -72,6 +72,48 @@ class NodesImpl
 
     Canvas m_canvas;
 
+public:
+    NodesImpl()
+    {
+        // initial nodes
+        AddNode("BigInput", ImVec2(100, 150));
+        AddNode("Test", ImVec2(350, 200));
+        AddNode("BigOutput", ImVec2(600, 250));
+    }
+
+    void ProcessNodes()
+    {
+        auto offset = m_canvas.Update();
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+        DisplayCurves(draw_list, offset);
+        DisplayNodes(draw_list, offset);
+
+        // yellow selecting rect
+        if (element_.state_ == NodesState_SelectingEmpty ||
+            element_.state_ == NodesState_SelectingValid ||
+            element_.state_ == NodesState_SelectingMore)
+        {
+            draw_list->AddRectFilled(element_.rectMin_, element_.rectMax_, ImColor(1.0f, 1.0f, 0.0f, 0.1f));
+            draw_list->AddRect(element_.rectMin_, element_.rectMax_, ImColor(1.0f, 1.0f, 0.0f, 0.5f));
+        }
+
+        ContextMenu();
+    }
+
+private:
+    void AddNode(const std::string &key, const ImVec2 &pos)
+    {
+        for (auto &type : nodes_types_)
+        {
+            if (type.name_ == key)
+            {
+                auto n = Node::Create(pos, type, ++id_);
+                nodes_.push_back(std::move(n));
+                return;
+            }
+        }
+    }
+
     void DisplayNodes(ImDrawList *drawList, ImVec2 offset)
     {
         ImGui::SetWindowFontScale(m_canvas.canvas_scale_);
@@ -160,30 +202,10 @@ class NodesImpl
         }
     }
 
-public:
-    void ProcessNodes()
-    {
-        auto offset = m_canvas.Update();
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        DisplayCurves(draw_list, offset);
-        DisplayNodes(draw_list, offset);
-
-        // yellow selecting rect
-        if (element_.state_ == NodesState_SelectingEmpty ||
-            element_.state_ == NodesState_SelectingValid ||
-            element_.state_ == NodesState_SelectingMore)
-        {
-            draw_list->AddRectFilled(element_.rectMin_, element_.rectMax_, ImColor(1.0f, 1.0f, 0.0f, 0.1f));
-            draw_list->AddRect(element_.rectMin_, element_.rectMax_, ImColor(1.0f, 1.0f, 0.0f, 0.5f));
-        }
-
-        ContextMenu();
-    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 Nodes::Nodes()
-    : m_impl(new NodesImpl)
 {
 }
 
@@ -194,6 +216,11 @@ Nodes::~Nodes()
 
 void Nodes::ProcessNodes()
 {
+    if (!m_impl)
+    {
+        m_impl = new NodesImpl;
+    }
+
     ImGui::Begin("Nodes");
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));

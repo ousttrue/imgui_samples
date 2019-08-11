@@ -56,7 +56,7 @@ void Canvas::UpdateScroll()
 {
     {
         ImVec2 scroll;
-        if (ImGui::IsMouseDown(2))
+        if (ImGui::IsWindowHovered() && ImGui::IsMouseDown(2))
         {
             scroll += ImGui::GetIO().MouseDelta;
         }
