@@ -1,6 +1,5 @@
 #pragma once
 #include <imgui.h>
-#include <imgui_internal.h>
 #include <cstdint>
 #include <vector>
 #include <memory>
@@ -35,7 +34,8 @@ struct NodesElement
     NodesState state_;
 
     ImVec2 position_;
-    ImRect rect_;
+    ImVec2 rectMin_;
+    ImVec2 rectMax_;
 
     Node *node_;
     Connection *connection_;
@@ -50,7 +50,8 @@ struct NodesElement
         state_ = state;
 
         position_ = ImVec2(0.0f, 0.0f);
-        rect_ = ImRect(0.0f, 0.0f, 0.0f, 0.0f);
+        rectMin_ = ImVec2(0.0f, 0.0f);
+        rectMax_ = ImVec2(0.0f, 0.0f);
 
         node_ = nullptr;
         connection_ = nullptr;

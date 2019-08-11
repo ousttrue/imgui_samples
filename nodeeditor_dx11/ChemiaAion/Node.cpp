@@ -1,7 +1,7 @@
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "Node.h"
 #include "NodesElement.h"
 #include <algorithm>
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
 static bool IsConnectorHovered(ImVec2 connection, float radius)
@@ -188,13 +188,14 @@ void Node::Display(ImDrawList *drawList, ImVec2 offset, float canvas_scale_, Nod
 
         ImRect node_rect(node_rect_min, node_rect_max);
 
+        ImRect element_rect(element_.rectMin_, element_.rectMax_);
         if (ImGui::GetIO().KeyCtrl)
         {
-            select_it |= element_.rect_.Overlaps(node_rect);
+            select_it |= element_rect.Overlaps(node_rect);
         }
         else
         {
-            select_it |= element_.rect_.Contains(node_rect);
+            select_it |= element_rect.Contains(node_rect);
         }
 
         consider_hover |= select_it;

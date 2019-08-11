@@ -1,8 +1,9 @@
-#define IMGUI_DEFINE_MATH_OPERATORS
-
 #include "NodesElement.h"
 #include "Node.h"
 #include "Bezier.h"
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui_internal.h>
 
 namespace ChemiaAion
 {
@@ -57,8 +58,8 @@ void NodesElement::UpdateState(ImVec2 offset,
             Reset(NodesState_SelectingEmpty);
 
             position_ = ImGui::GetIO().MousePos;
-            rect_.Min = ImGui::GetIO().MousePos;
-            rect_.Max = ImGui::GetIO().MousePos;
+            rectMin_ = ImGui::GetIO().MousePos;
+            rectMax_ = ImGui::GetIO().MousePos;
         }
     }
     break;
@@ -74,10 +75,10 @@ void NodesElement::UpdateState(ImVec2 offset,
     {
         const float distance_squared = GetSquaredDistanceToBezierCurve(
             ImGui::GetIO().MousePos,
-            offset + (rect_.Min * canvas_scale_),
-            offset + (rect_.Min * canvas_scale_) + (ImVec2(+50.0f, 0.0f) * canvas_scale_),
-            offset + (rect_.Max * canvas_scale_) + (ImVec2(-50.0f, 0.0f) * canvas_scale_),
-            offset + (rect_.Max * canvas_scale_));
+            offset + (rectMin_ * canvas_scale_),
+            offset + (rectMin_ * canvas_scale_) + (ImVec2(+50.0f, 0.0f) * canvas_scale_),
+            offset + (rectMax_ * canvas_scale_) + (ImVec2(-50.0f, 0.0f) * canvas_scale_),
+            offset + (rectMax_ * canvas_scale_));
 
         if (distance_squared > (10.0f * 10.0f))
         {
@@ -172,8 +173,8 @@ void NodesElement::UpdateState(ImVec2 offset,
             break;
         }
 
-        rect_.Min = ImMin(position_, ImGui::GetIO().MousePos);
-        rect_.Max = ImMax(position_, ImGui::GetIO().MousePos);
+        rectMin_ = ImMin(position_, ImGui::GetIO().MousePos);
+        rectMax_ = ImMax(position_, ImGui::GetIO().MousePos);
     }
     break;
 
@@ -185,8 +186,8 @@ void NodesElement::UpdateState(ImVec2 offset,
             break;
         }
 
-        rect_.Min = ImMin(position_, ImGui::GetIO().MousePos);
-        rect_.Max = ImMax(position_, ImGui::GetIO().MousePos);
+        rectMin_ = ImMin(position_, ImGui::GetIO().MousePos);
+        rectMax_ = ImMax(position_, ImGui::GetIO().MousePos);
 
         state_ = NodesState_SelectingEmpty;
     }
@@ -194,8 +195,8 @@ void NodesElement::UpdateState(ImVec2 offset,
 
     case NodesState_SelectingMore:
     {
-        rect_.Min = ImMin(position_, ImGui::GetIO().MousePos);
-        rect_.Max = ImMax(position_, ImGui::GetIO().MousePos);
+        rectMin_ = ImMin(position_, ImGui::GetIO().MousePos);
+        rectMax_ = ImMax(position_, ImGui::GetIO().MousePos);
 
         if (ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift)
         {
@@ -208,6 +209,8 @@ void NodesElement::UpdateState(ImVec2 offset,
             ImVec2 node_rect_max = node_rect_min + (node->size_ * canvas_scale_);
 
             ImRect node_rect(node_rect_min, node_rect_max);
+
+            ImRect rect_(rectMin_, rectMax_);
 
             if (ImGui::GetIO().KeyCtrl && rect_.Overlaps(node_rect))
             {
@@ -286,8 +289,8 @@ void NodesElement::UpdateState(ImVec2 offset,
         if (!hovered)
         {
             position_ = ImGui::GetIO().MousePos;
-            rect_.Min = ImGui::GetIO().MousePos;
-            rect_.Max = ImGui::GetIO().MousePos;
+            rectMin_ = ImGui::GetIO().MousePos;
+            rectMax_ = ImGui::GetIO().MousePos;
 
             if (ImGui::GetIO().KeyShift)
             {
@@ -386,10 +389,10 @@ void NodesElement::UpdateState(ImVec2 offset,
         {
             const float distance_squared = GetSquaredDistanceToBezierCurve(
                 ImGui::GetIO().MousePos,
-                offset + (rect_.Min * canvas_scale_),
-                offset + (rect_.Min * canvas_scale_) + (ImVec2(+50.0f, 0.0f) * canvas_scale_),
-                offset + (rect_.Max * canvas_scale_) + (ImVec2(-50.0f, 0.0f) * canvas_scale_),
-                offset + (rect_.Max * canvas_scale_));
+                offset + (rectMin_ * canvas_scale_),
+                offset + (rectMin_ * canvas_scale_) + (ImVec2(+50.0f, 0.0f) * canvas_scale_),
+                offset + (rectMax_ * canvas_scale_) + (ImVec2(-50.0f, 0.0f) * canvas_scale_),
+                offset + (rectMax_ * canvas_scale_));
 
             if (distance_squared > (10.0f * 10.0f))
             {
