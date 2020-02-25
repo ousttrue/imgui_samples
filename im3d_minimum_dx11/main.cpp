@@ -46,7 +46,7 @@ int main(int argc, char **argv)
         //
         Im3d_Impl_NewFrame(&camera.state, &state);
         // process gizmo, not draw, build draw list.
-        Im3d::Gizmo("GizmoUnified", world.data());
+        Im3d::GizmoTranslation("GizmoUnified", world.data()+12);
         Im3d::EndFrame();
 
         //

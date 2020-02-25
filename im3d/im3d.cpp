@@ -19,6 +19,7 @@
 	2017-02-23 (v1.01) - Removed AppData::m_tanHalfFov, replaced with AppData::m_projScaleY. Added AppData::m_projOrtho.
 */
 #include "im3d.h"
+#include "im3dcontext.h"
 #include "im3d_math.h"
 
 #include <cstdlib>
@@ -66,6 +67,97 @@
 // Internal config/debugging
 #define IM3D_RELATIVE_SNAP 0          // snap relative to the gizmo stored position/rotation/scale (else snap is absolute)
 #define IM3D_GIZMO_DEBUG   0          // draw debug bounds for gizmo intersections
+
+namespace Im3d{
+
+inline AppData& GetAppData()                                                 { return GetContext().getAppData();   }
+inline void     NewFrame()                                                   { GetContext().reset();               }
+inline void     EndFrame()                                                   { GetContext().endFrame();            }
+inline void     Draw()                                                       { GetContext().draw();                }
+
+inline const DrawList* GetDrawLists()                                        { return GetContext().getDrawLists();     }
+inline U32             GetDrawListCount()                                    { return GetContext().getDrawListCount(); }
+
+inline void  BeginPoints()                                                   { GetContext().begin(PrimitiveMode_Points);        }
+inline void  BeginLines()                                                    { GetContext().begin(PrimitiveMode_Lines);         }
+inline void  BeginLineLoop()                                                 { GetContext().begin(PrimitiveMode_LineLoop);      }
+inline void  BeginLineStrip()                                                { GetContext().begin(PrimitiveMode_LineStrip);     }
+inline void  BeginTriangles()                                                { GetContext().begin(PrimitiveMode_Triangles);     }
+inline void  BeginTriangleStrip()                                            { GetContext().begin(PrimitiveMode_TriangleStrip); }
+inline void  End()                                                           { GetContext().end(); }
+
+inline void  Vertex(const Vec3& _position)                                   { GetContext().vertex(_position, GetContext().getSize(), GetContext().getColor()); }
+inline void  Vertex(const Vec3& _position, Color _color)                     { GetContext().vertex(_position, GetContext().getSize(), _color); }
+inline void  Vertex(const Vec3& _position, float _size)                      { GetContext().vertex(_position, _size, GetContext().getColor()); }
+inline void  Vertex(const Vec3& _position, float _size, Color _color)        { GetContext().vertex(_position, _size, _color); }
+inline void  Vertex(float _x, float _y, float _z)                            { Vertex(Vec3(_x, _y, _z)); }
+inline void  Vertex(float _x, float _y, float _z, Color _color)              { Vertex(Vec3(_x, _y, _z), _color); }
+inline void  Vertex(float _x, float _y, float _z, float _size)               { Vertex(Vec3(_x, _y, _z), _size); }
+inline void  Vertex(float _x, float _y, float _z, float _size, Color _color) { Vertex(Vec3(_x, _y, _z), _size, _color); }
+
+inline void  PushDrawState()                                                 { Context& ctx = GetContext(); ctx.pushColor(ctx.getColor()); ctx.pushAlpha(ctx.getAlpha()); ctx.pushSize(ctx.getSize()); ctx.pushEnableSorting(ctx.getEnableSorting()); }
+inline void  PopDrawState()                                                  { Context& ctx = GetContext(); ctx.popColor(); ctx.popAlpha(); ctx.popSize(); ctx.popEnableSorting(); }
+
+inline void  PushColor()                                                     { GetContext().pushColor(GetContext().getColor()); }
+inline void  PushColor(Color _color)                                         { GetContext().pushColor(_color);                  }
+inline void  PopColor()                                                      { GetContext().popColor();                         }
+inline void  SetColor(Color _color)                                          { GetContext().setColor(_color);                   }
+inline void  SetColor(float _r, float _g, float _b, float _a)                { GetContext().setColor(Color(_r, _g, _b, _a));    }
+inline Color GetColor()                                                      { return GetContext().getColor();                  }
+
+inline void  PushAlpha()                                                     { GetContext().pushAlpha(GetContext().getAlpha()); }
+inline void  PushAlpha(float _alpha)                                         { GetContext().pushAlpha(_alpha);                  }
+inline void  PopAlpha()                                                      { GetContext().popAlpha();                         }
+inline void  SetAlpha(float _alpha)                                          { GetContext().setAlpha(_alpha);                   }
+inline float GetAlpha()                                                      { return GetContext().getAlpha();                  }
+
+inline void  PushSize()                                                      { GetContext().pushSize(GetContext().getAlpha());  }
+inline void  PushSize(float _size)                                           { GetContext().pushSize(_size);                    }
+inline void  PopSize()                                                       { GetContext().popSize();                          }
+inline void  SetSize(float _size)                                            { GetContext().setSize(_size);                     }
+inline float GetSize()                                                       { return GetContext().getSize();                   }
+
+inline void  PushEnableSorting()                                             { GetContext().pushEnableSorting(GetContext().getEnableSorting()); }
+inline void  PushEnableSorting(bool _enable)                                 { GetContext().pushEnableSorting(_enable); }
+inline void  PopEnableSorting()                                              { GetContext().popEnableSorting();         }
+inline void  EnableSorting(bool _enable)                                     { GetContext().setEnableSorting(_enable);  }
+
+inline void  PushMatrix()                                                    { GetContext().pushMatrix(GetContext().getMatrix()); }
+inline void  PushMatrix(const Mat4& _mat4)                                   { GetContext().pushMatrix(_mat4);                    }
+inline void  PopMatrix()                                                     { GetContext().popMatrix();                          }
+inline void  SetMatrix(const Mat4& _mat4)                                    { GetContext().setMatrix(_mat4);                     }
+inline void  SetIdentity()                                                   { GetContext().setMatrix(Mat4(1.0f));                }
+
+inline void  PushId()                                                        { GetContext().pushId(GetContext().getId()); }
+inline void  PushId(Id _id)                                                  { GetContext().pushId(_id);                  }
+inline void  PushId(const char* _str)                                        { GetContext().pushId(MakeId(_str));         }
+inline void  PushId(const void* _ptr)                                        { GetContext().pushId(MakeId(_ptr));         }
+inline void  PushId(int _i)                                                  { GetContext().pushId(MakeId(_i));           }
+inline void  PopId()                                                         { GetContext().popId();                      }
+inline Id    GetId()                                                         { return GetContext().getId();               }
+inline Id    GetActiveId()                                                   { return GetContext().m_appActiveId;         }
+inline Id    GetHotId()                                                      { return GetContext().m_appHotId;            }
+
+inline void  PushLayerId()                                                   { GetContext().pushLayerId(GetContext().getLayerId()); }
+inline void  PushLayerId(Id _layer)                                          { GetContext().pushLayerId(_layer); }
+inline void  PushLayerId(const char* _str)                                   { PushLayerId(MakeId(_str));        }
+inline void  PopLayerId()                                                    { GetContext().popLayerId();        }
+inline Id    GetLayerId()                                                    { return GetContext().getLayerId(); }
+
+inline bool GizmoTranslation(const char* _id, float _translation_[3], bool _local)                   { return GizmoTranslation(MakeId(_id), _translation_, _local);   }
+inline bool GizmoRotation(const char* _id, float _rotation_[3*3], bool _local)                       { return GizmoRotation(MakeId(_id), _rotation_, _local);         }
+inline bool GizmoScale(const char* _id, float _scale_[3])                                            { return GizmoScale(MakeId(_id), _scale_);                       }
+inline bool Gizmo(const char* _id, float _translation_[3], float _rotation_[3*3], float _scale_[3])  { return Gizmo(MakeId(_id), _translation_, _rotation_, _scale_); }
+inline bool Gizmo(const char* _id, float _transform_[4*4])                                           { return Gizmo(MakeId(_id), _transform_);                        }
+
+inline bool IsVisible(const Vec3& _origin, float _radius)                    { return GetContext().isVisible(_origin, _radius); }
+inline bool IsVisible(const Vec3& _min, const Vec3& _max)                    { return GetContext().isVisible(_min, _max);       }
+
+inline Context& GetContext()                                                 { return *internal::g_CurrentContext; }
+inline void     SetContext(Context& _ctx)                                    { internal::g_CurrentContext = &_ctx; }
+
+inline void     MergeContexts(Context& _dst_, const Context& _src)           { _dst_.merge(_src); }
+}
 
 using namespace Im3d;
 
