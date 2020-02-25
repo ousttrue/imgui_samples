@@ -1,4 +1,5 @@
 #pragma once
+#include "im3d.h"
 
 namespace Im3d
 {
