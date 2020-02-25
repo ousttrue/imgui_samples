@@ -1,4 +1,4 @@
-#include "win32_window.h"
+#include <Win32Window.h>
 #include "dx11_context.h"
 #include "dx11_renderer.h"
 #include "orbit_camera.h"
@@ -13,12 +13,13 @@ int main(int argc, char **argv)
     static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
     plog::init(plog::verbose, &debugOutputAppender);
 
-    Win32Window window;
-    auto hwnd = window.Create(640, 480, L"im3d_minimum_dx11");
+    screenstate::Win32Window window(L"im3d_minimum_dx11 class");
+    auto hwnd = window.Create(L"im3d_minimum_dx11");
     if (!hwnd)
     {
         return 1;
     }
+    window.Show();
 
     DX11Context dx11;
     auto device = dx11.Create(hwnd);
@@ -33,17 +34,17 @@ int main(int argc, char **argv)
     auto world = amth::IdentityMatrix();
     OrbitCamera camera;
 
-    while (window.IsRunning())
+    // window state and mouse input
+    screenstate::ScreenState state;
+    while (window.Update(&state))
     {
-        // get window state and mouse input
-        auto &windowState = window.GetState();
         // camera update
-        camera.WindowInput(windowState);
+        camera.WindowInput(state);
 
         //
         // gizmo update
         //
-        Im3d_Impl_NewFrame(&camera.state, &windowState);
+        Im3d_Impl_NewFrame(&camera.state, &state);
         // process gizmo, not draw, build draw list.
         Im3d::Gizmo("GizmoUnified", world.data());
         Im3d::EndFrame();
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
         // render
         //
         // setViewPort & clear background
-        auto deviceContext = dx11.NewFrame(windowState.Width, windowState.Height); 
+        auto deviceContext = dx11.NewFrame(state.Width, state.Height); 
         // use manipulated world
         renderer.DrawTeapot(deviceContext, camera.state.viewProjection.data(), world.data());
         // draw gizmo

@@ -47,38 +47,37 @@ void OrbitCamera::SetViewport(int x, int y, int w, int h)
     CalcPerspective();
 }
 
-void OrbitCamera::WindowInput(const WindowState &window)
+void OrbitCamera::WindowInput(const screenstate::ScreenState &window)
 {
     SetViewport(0, 0, window.Width, window.Height);
 
-    auto &mouse = window.Mouse;
     if (prevMouseX != -1 && prevMouseY != -1)
     {
-        auto deltaX = mouse.X - prevMouseX;
-        auto deltaY = mouse.Y - prevMouseY;
+        auto deltaX = window.MouseX - prevMouseX;
+        auto deltaY = window.MouseY - prevMouseY;
 
-        if (mouse.IsDown(ButtonFlags::Right))
+        if (window.Has(screenstate::MouseButtonFlags::RightDown))
         {
             const auto FACTOR = 1.0f / 180.0f * 1.7f;
             yawRadians -= deltaX * FACTOR;
             pitchRadians += deltaY * FACTOR;
         }
-        if (mouse.IsDown(ButtonFlags::Middle))
+        if (window.Has(screenstate::MouseButtonFlags::MiddleDown))
         {
             shiftX -= deltaX / (float)state.viewportHeight * shiftZ;
             shiftY += deltaY / (float)state.viewportHeight * shiftZ;
         }
-        if (mouse.Wheel > 0)
+        if (window.Has(screenstate::WheelPlus))
         {
             shiftZ *= 0.9f;
         }
-        else if (mouse.Wheel < 0)
+        else if (window.Has(screenstate::WheelMinus))
         {
             shiftZ *= 1.1f;
         }
     }
-    prevMouseX = mouse.X;
-    prevMouseY = mouse.Y;
+    prevMouseX = window.MouseX;
+    prevMouseY = window.MouseY;
     CalcView();
     state.CalcViewProjection();
 }

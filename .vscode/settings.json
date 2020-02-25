@@ -31,6 +31,7 @@
         "edon",
         "glew",
         "hlsl",
+        "hwnd",
         "imgui",
         "lparam",
         "mediump",

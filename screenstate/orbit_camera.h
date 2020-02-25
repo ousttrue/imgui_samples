@@ -1,5 +1,5 @@
 #pragma once
-#include "window_state.h"
+#include "ScreenState.h"
 #include "camera_state.h"
 #include <array>
 
@@ -30,5 +30,5 @@ struct OrbitCamera
     void CalcView();
     void CalcPerspective();
     void SetViewport(int x, int y, int w, int h);
-    void WindowInput(const WindowState &window);
+    void WindowInput(const screenstate::ScreenState &window);
 };
