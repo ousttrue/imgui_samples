@@ -1,5 +1,5 @@
 #pragma once
-#include "im3d.h"
+#include "im3d_internal.h"
 
 namespace Im3d
 {
@@ -14,11 +14,72 @@ enum PrimitiveMode
     PrimitiveMode_Triangles,
     PrimitiveMode_TriangleStrip
 };
+
 enum GizmoMode
 {
     GizmoMode_Translation,
     GizmoMode_Rotation,
     GizmoMode_Scale
+};
+
+enum Key
+{
+    Mouse_Left,
+    Key_L,
+    Key_R,
+    Key_S,
+    Key_T,
+
+    Key_Count,
+
+    // the following map keys -> 'action' states which may be more intuitive
+    Action_Select = Mouse_Left,
+    Action_GizmoLocal = Key_L,
+    Action_GizmoRotation = Key_R,
+    Action_GizmoScale = Key_S,
+    Action_GizmoTranslation = Key_T,
+
+    Action_Count
+};
+
+enum FrustumPlane
+{
+    FrustumPlane_Near,
+    FrustumPlane_Far,
+    FrustumPlane_Top,
+    FrustumPlane_Right,
+    FrustumPlane_Bottom,
+    FrustumPlane_Left,
+
+    FrustumPlane_Count
+};
+
+enum DrawPrimitiveType
+{
+    // order here determines the order in which unsorted primitives are drawn
+    DrawPrimitive_Triangles,
+    DrawPrimitive_Lines,
+    DrawPrimitive_Points,
+
+    DrawPrimitive_Count
+};
+
+struct DrawList
+{
+    Id m_layerId;
+    DrawPrimitiveType m_primType;
+    const VertexData *m_vertexData;
+    U32 m_vertexCount;
+};
+typedef void(DrawPrimitivesCallback)(const DrawList &_drawList);
+
+struct alignas(IM3D_VERTEX_ALIGNMENT) VertexData
+{
+    Vec4 m_positionSize; // xyz = position, w = size
+    Color m_color;       // rgba8 (MSB = r)
+
+    VertexData() {}
+    VertexData(const Vec3 &_position, float _size, Color _color) : m_positionSize(_position, _size), m_color(_color) {}
 };
 
 // Minimal vector.
@@ -97,6 +158,31 @@ public:
     void resize(U32 _size, const T &_val);
 
     static void swap(Vector<T> &_a_, Vector<T> &_b_);
+};
+
+struct AppData
+{
+    bool m_keyDown[Key_Count];              // Key states.
+    Vec4 m_cullFrustum[FrustumPlane_Count]; // Frustum planes for culling (if culling enabled).
+    Vec3 m_cursorRayOrigin;                 // World space cursor ray origin.
+    Vec3 m_cursorRayDirection;              // World space cursor ray direction.
+    Vec3 m_worldUp;                         // World space 'up' vector.
+    Vec3 m_viewOrigin;                      // World space render origin (camera position).
+    Vec3 m_viewDirection;                   // World space view direction.
+    Vec2 m_viewportSize;                    // Viewport size (pixels).
+    float m_projScaleY;                     // Scale factor used to convert from pixel size -> world scale; use tan(fov) for perspective projections, far plane height for ortho.
+    bool m_projOrtho;                       // If the projection matrix is orthographic.
+    float m_deltaTime;                      // Time since previous frame (seconds).
+    float m_snapTranslation;                // Snap value for translation gizmos (world units). 0 = disabled.
+    float m_snapRotation;                   // Snap value for rotation gizmos (radians). 0 = disabled.
+    float m_snapScale;                      // Snap value for scale gizmos. 0 = disabled.
+    void *m_appData;                        // App-specific data.
+
+    DrawPrimitivesCallback *drawCallback; // e.g. void Im3d_Draw(const DrawList& _drawList)
+
+    // Extract cull frustum planes from the view-projection matrix.
+    // Set _ndcZNegativeOneToOne = true if the proj matrix maps z from [-1,1] (OpenGL style).
+    void setCullFrustum(const Mat4 &_viewProj, bool _ndcZNegativeOneToOne);
 };
 
 // Context stores all relevant state - main interface affects the context currently bound via SetCurrentContext().
@@ -278,4 +364,18 @@ private:
 
     VertexList *getCurrentVertexList();
 };
+
+namespace internal
+{
+#if IM3D_THREAD_LOCAL_CONTEXT_PTR
+#define IM3D_THREAD_LOCAL thread_local
+#else
+#define IM3D_THREAD_LOCAL
+#endif
+extern IM3D_THREAD_LOCAL Context *g_CurrentContext;
+} // namespace internal
+
+inline Context &GetContext() { return *internal::g_CurrentContext; }
+inline void SetContext(Context &_ctx) { internal::g_CurrentContext = &_ctx; }
+
 } // namespace Im3d

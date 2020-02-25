@@ -142,9 +142,6 @@ inline bool Gizmo(const char* _id, float _transform_[4*4])                      
 inline bool IsVisible(const Vec3& _origin, float _radius)                    { return GetContext().isVisible(_origin, _radius); }
 inline bool IsVisible(const Vec3& _min, const Vec3& _max)                    { return GetContext().isVisible(_min, _max);       }
 
-inline Context& GetContext()                                                 { return *internal::g_CurrentContext; }
-inline void     SetContext(Context& _ctx)                                    { internal::g_CurrentContext = &_ctx; }
-
 inline void     MergeContexts(Context& _dst_, const Context& _src)           { _dst_.merge(_src); }
 }
 
