@@ -5,8 +5,6 @@
 #include <cstring>
 #include <cfloat>
 
-namespace Im3d
-{
 #if defined(IM3D_MALLOC) && !defined(IM3D_FREE)
 #error im3d: IM3D_MALLOC defined without IM3D_FREE; define both or neither
 #endif
@@ -19,6 +17,9 @@ namespace Im3d
 #ifndef IM3D_FREE
 #define IM3D_FREE(ptr) free(ptr)
 #endif
+
+namespace Im3d
+{
 
 static const int VertsPerDrawPrimitive[DrawPrimitive_Count] =
     {

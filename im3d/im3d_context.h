@@ -4,6 +4,7 @@
 
 namespace Im3d
 {
+constexpr Id Id_Invalid = 0;
 
 enum PrimitiveMode
 {

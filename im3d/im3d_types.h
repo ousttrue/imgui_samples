@@ -19,7 +19,6 @@ struct Mat4;
 struct Color;
 typedef unsigned int U32;
 typedef U32 Id;
-// constexpr Id Id_Invalid = 0;
 
 struct Vec2
 {
