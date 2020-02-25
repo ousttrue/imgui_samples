@@ -2,7 +2,7 @@
 
 namespace Im3d
 {
-    
+
 enum PrimitiveMode
 {
     PrimitiveMode_None,
@@ -18,6 +18,84 @@ enum GizmoMode
     GizmoMode_Translation,
     GizmoMode_Rotation,
     GizmoMode_Scale
+};
+
+// Minimal vector.
+template <typename T>
+class Vector
+{
+    T *m_data = nullptr;
+    U32 m_size = 0;
+    U32 m_capacity = 0;
+
+public:
+    Vector() {}
+    ~Vector();
+
+    T &operator[](U32 _i)
+    {
+        IM3D_ASSERT(_i < m_size);
+        return m_data[_i];
+    }
+    const T &operator[](U32 _i) const
+    {
+        IM3D_ASSERT(_i < m_size);
+        return m_data[_i];
+    }
+    T *data() { return m_data; }
+    const T *data() const { return m_data; }
+
+    void push_back(const T &_v)
+    {
+        T tmp = _v;
+        if (m_size == m_capacity)
+        {
+            reserve(m_capacity + m_capacity / 2);
+        }
+        m_data[m_size++] = tmp;
+    }
+    void pop_back()
+    {
+        IM3D_ASSERT(m_size > 0);
+        --m_size;
+    }
+    void append(const T *_v, U32 _count);
+    void append(const Vector<T> &_other) { append(_other.data(), _other.size()); }
+
+    T *begin() { return m_data; }
+    const T *begin() const { return m_data; }
+    T *end() { return m_data + m_size; }
+    const T *end() const { return m_data + m_size; }
+    T &front()
+    {
+        IM3D_ASSERT(m_size > 0);
+        return m_data[0];
+    }
+    const T &front() const
+    {
+        IM3D_ASSERT(m_size > 0);
+        return m_data[0];
+    }
+    T &back()
+    {
+        IM3D_ASSERT(m_size > 0);
+        return m_data[m_size - 1];
+    }
+    const T &back() const
+    {
+        IM3D_ASSERT(m_size > 0);
+        return m_data[m_size - 1];
+    }
+
+    U32 size() const { return m_size; }
+    U32 capacity() const { return m_capacity; }
+    bool empty() const { return m_size == 0; }
+
+    void clear() { m_size = 0; }
+    void reserve(U32 _capacity);
+    void resize(U32 _size, const T &_val);
+
+    static void swap(Vector<T> &_a_, Vector<T> &_b_);
 };
 
 // Context stores all relevant state - main interface affects the context currently bound via SetCurrentContext().
