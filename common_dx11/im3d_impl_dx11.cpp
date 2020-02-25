@@ -39,10 +39,7 @@ class Im3dImplDx11Impl
         {
             ctx->VSSetShader(m_vs.Get(), nullptr, 0);
             ctx->PSSetShader(m_ps.Get(), nullptr, 0);
-            if (useGS)
-            {
-                ctx->GSSetShader(m_gs.Get(), nullptr, 0);
-            }
+            ctx->GSSetShader(useGS ? m_gs.Get() : nullptr, nullptr, 0);
         }
     };
 
@@ -357,6 +354,67 @@ class Im3dImplDx11Impl
         return true;
     }
 
+    bool SetupShader(ID3D11DeviceContext *ctx, Im3d::DrawPrimitiveType primType)
+    {
+        ID3D11Buffer *constants[] = {
+            g_Im3dConstantBuffer.Get(),
+        };
+        ctx->VSSetConstantBuffers(0, _countof(constants), constants);
+
+        // select shader/primitive topology
+        switch (primType)
+        {
+        case Im3d::DrawPrimitive_Points:
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+            ctx->GSSetConstantBuffers(0, _countof(constants), constants);
+            g_Im3dShaderPoints.Set(ctx);
+            break;
+        case Im3d::DrawPrimitive_Lines:
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+            ctx->GSSetConstantBuffers(0, _countof(constants), constants);
+            g_Im3dShaderLines.Set(ctx);
+            break;
+        case Im3d::DrawPrimitive_Triangles:
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            g_Im3dShaderTriangles.Set(ctx, false);
+            break;
+        default:
+            IM3D_ASSERT(false);
+            return false;
+        };
+
+        return true;
+    }
+
+    bool Draw(const ComPtr<ID3D11Device> &d3d,
+              ID3D11DeviceContext *ctx, const Im3d::DrawList *drawList)
+    {
+        if (!UpdateVertexBuffer(d3d, drawList->m_vertexCount))
+        {
+            return false;
+        }
+
+        // update vertex buffer
+        D3D11_MAPPED_SUBRESOURCE subRes;
+        if (FAILED(ctx->Map(g_Im3dVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subRes)))
+        {
+            return false;
+        }
+        memcpy(subRes.pData, drawList->m_vertexData, drawList->m_vertexCount * sizeof(Im3d::VertexData));
+        ctx->Unmap(g_Im3dVertexBuffer.Get(), 0);
+
+        UINT stride = sizeof(Im3d::VertexData);
+        UINT offset = 0;
+        ID3D11Buffer *vertexBuffers[] = {
+            g_Im3dVertexBuffer.Get(),
+        };
+        ctx->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, &stride, &offset);
+        ctx->IASetInputLayout(g_Im3dInputLayout.Get());
+        ctx->Draw(drawList->m_vertexCount, 0);
+
+        return true;
+    }
+
 public:
     void Draw(ID3D11DeviceContext *ctx, const float *viewProjection)
     {
@@ -385,66 +443,28 @@ public:
         ctx->OMSetBlendState(g_Im3dBlendState.Get(), nullptr, 0xffffffff);
 
         auto drawList = Im3d::GetDrawLists();
-        for (Im3d::U32 i = 0, n = Im3d::GetDrawListCount(); i < n; ++i, ++drawList)
+        auto n = Im3d::GetDrawListCount();
+        for (Im3d::U32 i = 0; i < n; ++i, ++drawList)
         {
             if (drawList->m_layerId == Im3d::MakeId("NamedLayer"))
             {
                 // The application may group primitives into layers, which can be used to change the draw state (e.g. enable depth testing, use a different shader)
             }
 
-            if (!UpdateVertexBuffer(d3d, drawList->m_vertexCount))
+            if (!SetupShader(ctx, drawList->m_primType))
             {
-                return;
+                break;
             }
 
-            D3D11_MAPPED_SUBRESOURCE subRes;
-            if (FAILED(ctx->Map(g_Im3dVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subRes)))
+            if (!Draw(d3d, ctx, drawList))
             {
-                return;
+                break;
             }
-            memcpy(subRes.pData, drawList->m_vertexData, drawList->m_vertexCount * sizeof(Im3d::VertexData));
-            ctx->Unmap(g_Im3dVertexBuffer.Get(), 0);
-
-            ID3D11Buffer *constants[] = {
-                g_Im3dConstantBuffer.Get(),
-            };
-
-            // select shader/primitive topo
-            switch (drawList->m_primType)
-            {
-            case Im3d::DrawPrimitive_Points:
-                ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-                ctx->GSSetConstantBuffers(0, _countof(constants), constants);
-                g_Im3dShaderPoints.Set(ctx);
-                break;
-            case Im3d::DrawPrimitive_Lines:
-                ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-                ctx->GSSetConstantBuffers(0, _countof(constants), constants);
-                g_Im3dShaderLines.Set(ctx);
-                break;
-            case Im3d::DrawPrimitive_Triangles:
-                ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                g_Im3dShaderTriangles.Set(ctx, false);
-                break;
-            default:
-                IM3D_ASSERT(false);
-                return;
-            };
-
-            UINT stride = sizeof(Im3d::VertexData);
-            UINT offset = 0;
-            ID3D11Buffer *vertexBuffers[] = {
-                g_Im3dVertexBuffer.Get(),
-            };
-            ctx->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, &stride, &offset);
-            ctx->IASetInputLayout(g_Im3dInputLayout.Get());
-            ctx->VSSetConstantBuffers(0, _countof(constants), constants);
-            ctx->Draw(drawList->m_vertexCount, 0);
-
-            ctx->VSSetShader(nullptr, nullptr, 0);
-            ctx->GSSetShader(nullptr, nullptr, 0);
-            ctx->PSSetShader(nullptr, nullptr, 0);
         }
+
+        ctx->VSSetShader(nullptr, nullptr, 0);
+        ctx->GSSetShader(nullptr, nullptr, 0);
+        ctx->PSSetShader(nullptr, nullptr, 0);
     }
 };
 
