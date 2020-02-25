@@ -47,8 +47,205 @@ class Im3dImplDx11Impl
     };
 
     D3DShader g_Im3dShaderPoints;
+    bool InitializePoints(const ComPtr<ID3D11Device> &d3d)
+    {
+        // points shader
+        D3D_SHADER_MACRO vsPointsDefs[] = {
+            {
+                .Name = "VERTEX_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "POINTS",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto vsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@points:vs", vsPointsDefs, "vs_4_0");
+        if (!vsBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &g_Im3dShaderPoints.m_vs)))
+        {
+            return false;
+        }
+
+        {
+            D3D11_INPUT_ELEMENT_DESC desc[] = {
+                {"POSITION_SIZE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, (UINT)offsetof(Im3d::VertexData, m_positionSize), D3D11_INPUT_PER_VERTEX_DATA, 0},
+                {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, (UINT)offsetof(Im3d::VertexData, m_color), D3D11_INPUT_PER_VERTEX_DATA, 0},
+            };
+            if (FAILED(d3d->CreateInputLayout(desc, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &g_Im3dInputLayout)))
+            {
+                return false;
+            }
+        }
+
+        D3D_SHADER_MACRO gsPointsDefs[] = {
+            {
+                .Name = "GEOMETRY_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "POINTS",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto gsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@points:gs", gsPointsDefs, "gs_4_0");
+        if (!gsBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreateGeometryShader((DWORD *)gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), nullptr, &g_Im3dShaderPoints.m_gs)))
+        {
+            return false;
+        }
+
+        D3D_SHADER_MACRO psPointsDefs[] = {
+            {
+                .Name = "PIXEL_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "POINTS",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto psBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@points:ps", psPointsDefs, "ps_4_0");
+        if (!psBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &g_Im3dShaderPoints.m_ps)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     D3DShader g_Im3dShaderLines;
+    bool InitializeLines(const ComPtr<ID3D11Device> &d3d)
+    {
+        // lines shader
+        D3D_SHADER_MACRO vsLinesDefs[] = {
+            {
+                .Name = "VERTEX_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "LINES",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto vsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@lines:vs", vsLinesDefs, "vs_4_0");
+        if (!vsBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &g_Im3dShaderLines.m_vs)))
+        {
+            return false;
+        }
+
+        D3D_SHADER_MACRO gsLinesDefs[] = {
+            {
+                .Name = "GEOMETRY_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "LINES",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto gsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@lines:gs", gsLinesDefs, "gs_4_0");
+        if (!gsBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreateGeometryShader((DWORD *)gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), nullptr, &g_Im3dShaderLines.m_gs)))
+        {
+            return false;
+        }
+
+        D3D_SHADER_MACRO psLinesDefs[] = {
+            {
+                .Name = "PIXEL_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "LINES",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto psBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@lines:ps", psLinesDefs, "ps_4_0");
+        if (!psBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &g_Im3dShaderLines.m_ps)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     D3DShader g_Im3dShaderTriangles;
+    bool InitializeTriangles(const ComPtr<ID3D11Device> &d3d)
+    {
+        // triangles shader
+        D3D_SHADER_MACRO vsTrianglesDefs[] = {
+            {
+                .Name = "VERTEX_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "TRIANGLES",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto vsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@triangles:vs", vsTrianglesDefs, "vs_4_0");
+        if (!vsBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &g_Im3dShaderTriangles.m_vs)))
+        {
+            return false;
+        }
+
+        D3D_SHADER_MACRO psTrianglesDefs[] = {
+            {
+                .Name = "PIXEL_SHADER",
+                .Definition = "1",
+            },
+            {
+                .Name = "TRIANGLES",
+                .Definition = "1",
+            },
+            {0},
+        };
+        auto psBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@triangles:ps", psTrianglesDefs, "ps_4_0");
+        if (!psBlob)
+        {
+            return false;
+        }
+        if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &g_Im3dShaderTriangles.m_ps)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     ComPtr<ID3D11InputLayout> g_Im3dInputLayout;
     ComPtr<ID3D11RasterizerState> g_Im3dRasterizerState;
     ComPtr<ID3D11BlendState> g_Im3dBlendState;
@@ -56,226 +253,52 @@ class Im3dImplDx11Impl
     ComPtr<ID3D11Buffer> g_Im3dConstantBuffer;
     ComPtr<ID3D11Buffer> g_Im3dVertexBuffer;
 
-public:
-    void Draw(ID3D11DeviceContext *ctx, const float *viewProjection)
+    bool Initialize(const ComPtr<ID3D11Device> &d3d)
     {
-        auto &ad = Im3d::GetAppData();
-
-        ComPtr<ID3D11Device> d3d;
-        ctx->GetDevice(&d3d);
-
         if (!g_Im3dShaderPoints.m_vs)
         {
-            // points shader
-            D3D_SHADER_MACRO vsPointsDefs[] =
-                {
-                    {
-                        .Name = "VERTEX_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "POINTS",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto vsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@points:vs", vsPointsDefs, "vs_4_0");
-            if (!vsBlob)
+            if (!InitializePoints(d3d))
             {
-                return;
-            }
-            if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &g_Im3dShaderPoints.m_vs)))
-            {
-                return;
-            }
-
-            {
-                D3D11_INPUT_ELEMENT_DESC desc[] = {
-                    {"POSITION_SIZE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, (UINT)offsetof(Im3d::VertexData, m_positionSize), D3D11_INPUT_PER_VERTEX_DATA, 0},
-                    {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, (UINT)offsetof(Im3d::VertexData, m_color), D3D11_INPUT_PER_VERTEX_DATA, 0},
-                };
-                if (FAILED(d3d->CreateInputLayout(desc, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &g_Im3dInputLayout)))
-                {
-                    return;
-                }
-            }
-
-            D3D_SHADER_MACRO gsPointsDefs[] =
-                {
-                    {
-                        .Name = "GEOMETRY_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "POINTS",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto gsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@points:gs", gsPointsDefs, "gs_4_0");
-            if (!gsBlob)
-            {
-                return;
-            }
-            if (FAILED(d3d->CreateGeometryShader((DWORD *)gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), nullptr, &g_Im3dShaderPoints.m_gs)))
-            {
-                return;
-            }
-
-            D3D_SHADER_MACRO psPointsDefs[] =
-                {
-                    {
-                        .Name = "PIXEL_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "POINTS",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto psBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@points:ps", psPointsDefs, "ps_4_0");
-            if (!psBlob)
-            {
-                return;
-            }
-            if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &g_Im3dShaderPoints.m_ps)))
-            {
-                return;
+                return false;
             }
         }
 
         if (!g_Im3dShaderLines.m_vs)
         {
-            // lines shader
-            D3D_SHADER_MACRO vsLinesDefs[] =
-                {
-                    {
-                        .Name = "VERTEX_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "LINES",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto vsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@lines:vs", vsLinesDefs, "vs_4_0");
-            if (!vsBlob)
+            if (!InitializeLines(d3d))
             {
-                return;
-            }
-            if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &g_Im3dShaderLines.m_vs)))
-            {
-                return;
-            }
-
-            D3D_SHADER_MACRO gsLinesDefs[] =
-                {
-                    {
-                        .Name = "GEOMETRY_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "LINES",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto gsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@lines:gs", gsLinesDefs, "gs_4_0");
-            if (!gsBlob)
-            {
-                return;
-            }
-            if (FAILED(d3d->CreateGeometryShader((DWORD *)gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), nullptr, &g_Im3dShaderLines.m_gs)))
-            {
-                return;
-            }
-
-            D3D_SHADER_MACRO psLinesDefs[] =
-                {
-                    {
-                        .Name = "PIXEL_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "LINES",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto psBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@lines:ps", psLinesDefs, "ps_4_0");
-            if (!psBlob)
-            {
-                return;
-            }
-            if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &g_Im3dShaderLines.m_ps)))
-            {
-                return;
+                return false;
             }
         }
 
         if (!g_Im3dShaderTriangles.m_vs)
         {
-            // triangles shader
-            D3D_SHADER_MACRO vsTrianglesDefs[] =
-                {
-                    {
-                        .Name = "VERTEX_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "TRIANGLES",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto vsBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@triangles:vs", vsTrianglesDefs, "vs_4_0");
-            if (!vsBlob)
+            if (!InitializeTriangles(d3d))
             {
-                return;
-            }
-            if (FAILED(d3d->CreateVertexShader((DWORD *)vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &g_Im3dShaderTriangles.m_vs)))
-            {
-                return;
-            }
-
-            D3D_SHADER_MACRO psTrianglesDefs[] =
-                {
-                    {
-                        .Name = "PIXEL_SHADER",
-                        .Definition = "1",
-                    },
-                    {
-                        .Name = "TRIANGLES",
-                        .Definition = "1",
-                    },
-                    {0}};
-            auto psBlob = LoadCompileShader(g_hlsl, "im3d.hlsl@triangles:ps", psTrianglesDefs, "ps_4_0");
-            if (!psBlob)
-            {
-                return;
-            }
-            if (FAILED(d3d->CreatePixelShader((DWORD *)psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &g_Im3dShaderTriangles.m_ps)))
-            {
-                return;
+                return false;
             }
         }
 
         if (!g_Im3dRasterizerState)
         {
-            D3D11_RASTERIZER_DESC desc = {};
-            desc.FillMode = D3D11_FILL_SOLID;
-            desc.CullMode = D3D11_CULL_NONE; // culling invalid for points/lines (they are view-aligned), valid but optional for triangles
+            D3D11_RASTERIZER_DESC desc = {
+                .FillMode = D3D11_FILL_SOLID,
+                .CullMode = D3D11_CULL_NONE, // culling invalid for points/lines (they are view-aligned), valid but optional for triangles
+            };
             if (FAILED(d3d->CreateRasterizerState(&desc, &g_Im3dRasterizerState)))
             {
-                return;
+                return false;
             }
         }
-        ctx->RSSetState(g_Im3dRasterizerState.Get());
 
         if (!g_Im3dDepthStencilState)
         {
             D3D11_DEPTH_STENCIL_DESC desc = {};
             if (FAILED(d3d->CreateDepthStencilState(&desc, &g_Im3dDepthStencilState)))
             {
-                return;
+                return false;
             }
         }
-        ctx->OMSetDepthStencilState(g_Im3dDepthStencilState.Get(), 0);
 
         if (!g_Im3dBlendState)
         {
@@ -290,10 +313,9 @@ public:
             desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
             if (FAILED(d3d->CreateBlendState(&desc, &g_Im3dBlendState)))
             {
-                return;
+                return false;
             }
         }
-        ctx->OMSetBlendState(g_Im3dBlendState.Get(), nullptr, 0xffffffff);
 
         if (!g_Im3dConstantBuffer)
         {
@@ -303,68 +325,92 @@ public:
             desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
             if (FAILED(d3d->CreateBuffer(&desc, nullptr, &g_Im3dConstantBuffer)))
             {
-                return;
+                return false;
             }
         }
 
-        for (Im3d::U32 i = 0, n = Im3d::GetDrawListCount(); i < n; ++i)
-        {
-            auto &drawList = Im3d::GetDrawLists()[i];
+        return true;
+    }
 
-            if (drawList.m_layerId == Im3d::MakeId("NamedLayer"))
+    bool UpdateVertexBuffer(const ComPtr<ID3D11Device> &d3d, UINT vertexCount)
+    {
+        static Im3d::U32 s_vertexBufferSize = 0;
+        if (!g_Im3dVertexBuffer || s_vertexBufferSize < vertexCount)
+        {
+            if (g_Im3dVertexBuffer)
+            {
+                g_Im3dVertexBuffer = nullptr;
+            }
+            s_vertexBufferSize = vertexCount;
+
+            D3D11_BUFFER_DESC desc = {0};
+            desc.ByteWidth = s_vertexBufferSize * sizeof(Im3d::VertexData);
+            desc.Usage = D3D11_USAGE_DYNAMIC;
+            desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            if (FAILED(d3d->CreateBuffer(&desc, nullptr, &g_Im3dVertexBuffer)))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+public:
+    void Draw(ID3D11DeviceContext *ctx, const float *viewProjection)
+    {
+        ComPtr<ID3D11Device> d3d;
+        ctx->GetDevice(&d3d);
+        if (!Initialize(d3d))
+        {
+            return;
+        }
+
+        auto &ad = Im3d::GetAppData();
+
+        // upload view-proj matrix/viewport size
+        struct Layout
+        {
+            Im3d::Mat4 m_viewProj;
+            Im3d::Vec2 m_viewport;
+        };
+        Layout layout{
+            .m_viewProj = *(const Im3d::Mat4 *)viewProjection,
+            .m_viewport = ad.m_viewportSize};
+        ctx->UpdateSubresource(g_Im3dConstantBuffer.Get(), 0, nullptr, &layout, 0, 0);
+
+        ctx->RSSetState(g_Im3dRasterizerState.Get());
+        ctx->OMSetDepthStencilState(g_Im3dDepthStencilState.Get(), 0);
+        ctx->OMSetBlendState(g_Im3dBlendState.Get(), nullptr, 0xffffffff);
+
+        auto drawList = Im3d::GetDrawLists();
+        for (Im3d::U32 i = 0, n = Im3d::GetDrawListCount(); i < n; ++i, ++drawList)
+        {
+            if (drawList->m_layerId == Im3d::MakeId("NamedLayer"))
             {
                 // The application may group primitives into layers, which can be used to change the draw state (e.g. enable depth testing, use a different shader)
             }
 
-            // upload view-proj matrix/viewport size
-            struct Layout
-            {
-                Im3d::Mat4 m_viewProj;
-                Im3d::Vec2 m_viewport;
-            };
-            Layout layout{
-                .m_viewProj = *(const Im3d::Mat4 *)viewProjection,
-                .m_viewport = ad.m_viewportSize};
-            ctx->UpdateSubresource(g_Im3dConstantBuffer.Get(), 0, nullptr, &layout, 0, 0);
-
-            // upload vertex data
-            static Im3d::U32 s_vertexBufferSize = 0;
-            if (!g_Im3dVertexBuffer || s_vertexBufferSize < drawList.m_vertexCount)
-            {
-                if (g_Im3dVertexBuffer)
-                {
-                    g_Im3dVertexBuffer = nullptr;
-                }
-                s_vertexBufferSize = drawList.m_vertexCount;
-
-                D3D11_BUFFER_DESC desc = {0};
-                desc.ByteWidth = s_vertexBufferSize * sizeof(Im3d::VertexData);
-                desc.Usage = D3D11_USAGE_DYNAMIC;
-                desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-                desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-                if (FAILED(d3d->CreateBuffer(&desc, nullptr, &g_Im3dVertexBuffer)))
-                {
-                    return;
-                }
-            }
-
-            D3D11_MAPPED_SUBRESOURCE subRes;
-            if (SUCCEEDED(ctx->Map(g_Im3dVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subRes)))
-            {
-                memcpy(subRes.pData, drawList.m_vertexData, drawList.m_vertexCount * sizeof(Im3d::VertexData));
-                ctx->Unmap(g_Im3dVertexBuffer.Get(), 0);
-            }
-            else
+            if (!UpdateVertexBuffer(d3d, drawList->m_vertexCount))
             {
                 return;
             }
 
-            ID3D11Buffer *constants[] =
-                {
-                    g_Im3dConstantBuffer.Get()};
+            D3D11_MAPPED_SUBRESOURCE subRes;
+            if (FAILED(ctx->Map(g_Im3dVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subRes)))
+            {
+                return;
+            }
+            memcpy(subRes.pData, drawList->m_vertexData, drawList->m_vertexCount * sizeof(Im3d::VertexData));
+            ctx->Unmap(g_Im3dVertexBuffer.Get(), 0);
+
+            ID3D11Buffer *constants[] = {
+                g_Im3dConstantBuffer.Get(),
+            };
 
             // select shader/primitive topo
-            switch (drawList.m_primType)
+            switch (drawList->m_primType)
             {
             case Im3d::DrawPrimitive_Points:
                 ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -393,7 +439,7 @@ public:
             ctx->IASetVertexBuffers(0, _countof(vertexBuffers), vertexBuffers, &stride, &offset);
             ctx->IASetInputLayout(g_Im3dInputLayout.Get());
             ctx->VSSetConstantBuffers(0, _countof(constants), constants);
-            ctx->Draw(drawList.m_vertexCount, 0);
+            ctx->Draw(drawList->m_vertexCount, 0);
 
             ctx->VSSetShader(nullptr, nullptr, 0);
             ctx->GSSetShader(nullptr, nullptr, 0);
