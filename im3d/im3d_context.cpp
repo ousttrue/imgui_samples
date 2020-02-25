@@ -1,5 +1,5 @@
 #include "im3d_context.h"
-#include "im3d_internal.h"
+#include "im3d.h"
 #include "im3d_math.h"
 #include <cstdlib>
 #include <cstring>

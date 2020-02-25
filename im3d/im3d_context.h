@@ -1,5 +1,6 @@
 #pragma once
-#include "im3d_internal.h"
+#include "im3d.h"
+#include "im3d_types.h"
 
 namespace Im3d
 {
@@ -64,15 +65,6 @@ enum DrawPrimitiveType
     DrawPrimitive_Count
 };
 
-struct DrawList
-{
-    Id m_layerId;
-    DrawPrimitiveType m_primType;
-    const VertexData *m_vertexData;
-    U32 m_vertexCount;
-};
-typedef void(DrawPrimitivesCallback)(const DrawList &_drawList);
-
 struct alignas(IM3D_VERTEX_ALIGNMENT) VertexData
 {
     Vec4 m_positionSize; // xyz = position, w = size
@@ -81,6 +73,15 @@ struct alignas(IM3D_VERTEX_ALIGNMENT) VertexData
     VertexData() {}
     VertexData(const Vec3 &_position, float _size, Color _color) : m_positionSize(_position, _size), m_color(_color) {}
 };
+
+struct DrawList
+{
+    Id m_layerId;
+    DrawPrimitiveType m_primType;
+    const VertexData *m_vertexData;
+    U32 m_vertexCount;
+};
+typedef void(DrawPrimitivesCallback)(const DrawList &_drawList);
 
 // Minimal vector.
 template <typename T>
