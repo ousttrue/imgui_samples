@@ -35,11 +35,11 @@ class Im3dImplDx11Impl
         ComPtr<ID3D11VertexShader> m_vs;
         ComPtr<ID3D11GeometryShader> m_gs;
         ComPtr<ID3D11PixelShader> m_ps;
-        void Set(ID3D11DeviceContext *ctx, bool useGS = true)
+        void Set(ID3D11DeviceContext *ctx, bool isTriangle = false)
         {
             ctx->VSSetShader(m_vs.Get(), nullptr, 0);
             ctx->PSSetShader(m_ps.Get(), nullptr, 0);
-            ctx->GSSetShader(useGS ? m_gs.Get() : nullptr, nullptr, 0);
+            ctx->GSSetShader(!isTriangle ? m_gs.Get() : nullptr, nullptr, 0);
         }
     };
 
@@ -376,7 +376,7 @@ class Im3dImplDx11Impl
             break;
         case Im3d::DrawPrimitive_Triangles:
             ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            g_Im3dShaderTriangles.Set(ctx, false);
+            g_Im3dShaderTriangles.Set(ctx, true);
             break;
         default:
             IM3D_ASSERT(false);
