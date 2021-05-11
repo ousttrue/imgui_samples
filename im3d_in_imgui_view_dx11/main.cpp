@@ -79,7 +79,8 @@ int main(int argc, char **argv)
                 auto frameHeight = ImGui::GetFrameHeight();
 
                 // update view camera
-                auto renderTarget = view.Draw(deviceContext, windowState.Reposition(pos.x, pos.y + frameHeight, size.x, size.y));
+                auto viewState = windowState.Crop(pos.x, pos.y + frameHeight, size.x, size.y);
+                auto renderTarget = view.Draw(deviceContext, viewState);
                 ImGui::ImageButton((ImTextureID)renderTarget, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), 0);
             }
             ImGui::End();

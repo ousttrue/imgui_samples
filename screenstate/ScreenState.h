@@ -74,7 +74,7 @@ struct ScreenState
     //     return 0.001f * delta;
     // }
 
-    ScreenState Reposition(int x, int y, int w, int h) const
+    ScreenState Crop(int x, int y, int w, int h) const
     {
         auto state = *this;
         state.Width = w;
