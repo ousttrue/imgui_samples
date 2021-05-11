@@ -1,4 +1,4 @@
-#include "win32_window.h"
+#include <Win32Window.h>
 #include "dx11_context.h"
 #include "dx11_view.h"
 
@@ -14,12 +14,13 @@ int main(int argc, char **argv)
     static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
     plog::init(plog::verbose, &debugOutputAppender);
 
-    Win32Window window;
-    auto hwnd = window.Create(640, 480, L"im3d_in_imgui_view");
+    screenstate::Win32Window window(L"CLASS_NAME");
+    auto hwnd = window.Create(L"im3d_in_imgui_view", 640, 480);
     if (!hwnd)
     {
         return 1;
     }
+    window.Show();
 
     DX11Context dx11;
     auto device = dx11.Create(hwnd);
@@ -41,18 +42,23 @@ int main(int argc, char **argv)
 
     DX11View view;
 
-    while (window.IsRunning())
+    screenstate::ScreenState windowState;
+    while (window.Update(&windowState))
     {
-        // get window state and mouse input
-        auto &windowState = window.GetState();
-
         // Start the Dear ImGui frame
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        io.MouseDown[0] = (int)windowState.Mouse.IsDown(ButtonFlags::Left);
-        io.MouseDown[1] = (int)windowState.Mouse.IsDown(ButtonFlags::Right);
-        io.MouseDown[2] = (int)windowState.Mouse.IsDown(ButtonFlags::Middle);
-        io.MouseWheel = (float)windowState.Mouse.Wheel;
+        io.MouseDown[0] = windowState.Has(screenstate::MouseButtonFlags::LeftDown);
+        io.MouseDown[1] = windowState.Has(screenstate::MouseButtonFlags::RightDown);
+        io.MouseDown[2] = windowState.Has(screenstate::MouseButtonFlags::MiddleDown);
+        if (windowState.Has(screenstate::MouseButtonFlags::WheelMinus))
+        {
+            io.MouseWheel = -100;
+        }
+        else if (windowState.Has(screenstate::MouseButtonFlags::WheelPlus))
+        {
+            io.MouseWheel = 100;
+        }
         ImGui::NewFrame();
 
         ////////////////////////////////////////////////////////////
@@ -72,20 +78,8 @@ int main(int argc, char **argv)
                 auto pos = ImGui::GetWindowPos();
                 auto frameHeight = ImGui::GetFrameHeight();
 
-                auto &mouse = windowState.Mouse;
-                WindowState viewState{
-                    .Width = (int)size.x,
-                    .Height = (int)size.y,
-                    .ElapsedSeconds = windowState.ElapsedSeconds,
-                    .DeltaSeconds = windowState.DeltaSeconds,
-                    .Mouse = {
-                        .X = mouse.X - (int)pos.x,
-                        .Y = mouse.Y - (int)pos.y - (int)frameHeight,
-                        .Wheel = mouse.Wheel,
-                        .Buttons = mouse.Buttons}};
                 // update view camera
-
-                auto renderTarget = view.Draw(deviceContext, viewState);
+                auto renderTarget = view.Draw(deviceContext, windowState.Reposition(pos.x, pos.y + frameHeight, size.x, size.y));
                 ImGui::ImageButton((ImTextureID)renderTarget, size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), 0);
             }
             ImGui::End();

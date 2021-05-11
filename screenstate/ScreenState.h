@@ -73,6 +73,16 @@ struct ScreenState
     //     }
     //     return 0.001f * delta;
     // }
+
+    ScreenState Reposition(int x, int y, int w, int h) const
+    {
+        auto state = *this;
+        state.Width = w;
+        state.Height = h;
+        state.MouseX -= x;
+        state.MouseY -= y;
+        return state;
+    }
 };
 static_assert(sizeof(ScreenState) == 20, "sizeof(WindowMouseState)");
 } // namespace screenstate

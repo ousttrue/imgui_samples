@@ -15,43 +15,43 @@
             "environment": [],
             "externalConsole": false
         },
-        {
-            "name": "es3",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/im3d_minimum_es3/im3d_minimum_es3.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "PATH",
-                    "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
-                }
-            ],
-            "externalConsole": false
-        },
-        {
-            "name": "dx11",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/im3d_minimum_dx11/Debug/im3d_minimum_dx11.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "PATH",
-                    "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
-                }
-            ],
-            "externalConsole": false
-        },
+        // {
+        //     "name": "es3",
+        //     "type": "cppvsdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build/im3d_minimum_es3/im3d_minimum_es3.exe",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [
+        //         {
+        //             "name": "PATH",
+        //             "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
+        //         }
+        //     ],
+        //     "externalConsole": false
+        // },
+        // {
+        //     "name": "dx11",
+        //     "type": "cppvsdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build/im3d_minimum_dx11/Debug/im3d_minimum_dx11.exe",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [
+        //         {
+        //             "name": "PATH",
+        //             "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
+        //         }
+        //     ],
+        //     "externalConsole": false
+        // },
         {
             "name": "dx11_view",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/im3d_in_imgui_view_dx11/im3d_in_imgui_view_dx11.exe",
+            "program": "${workspaceFolder}/build/im3d_in_imgui_view_dx11/Debug/im3d_in_imgui_view_dx11.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -63,21 +63,21 @@
             ],
             "externalConsole": false
         },
-        {
-            "name": "nodeeditor_dx11",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/nodeeditor_dx11/nodeeditor_dx11.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "PATH",
-                    "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
-                }
-            ],
-            "externalConsole": false
-        }
+        // {
+        //     "name": "nodeeditor_dx11",
+        //     "type": "cppvsdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build/nodeeditor_dx11/nodeeditor_dx11.exe",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [
+        //         {
+        //             "name": "PATH",
+        //             "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
+        //         }
+        //     ],
+        //     "externalConsole": false
+        // }
     ]
 }

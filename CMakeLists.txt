@@ -25,6 +25,6 @@ SUBDIRS(
     im3d_minimum_gl3
     # im3d_minimum_es3
     im3d_minimum_dx11
-    # im3d_in_imgui_view_dx11
+    im3d_in_imgui_view_dx11
     # nodeeditor_dx11
     )

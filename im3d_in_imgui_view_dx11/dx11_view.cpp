@@ -1,4 +1,4 @@
-#include "window_state.h"
+#include <ScreenState.h>
 
 #include "dx11_view.h"
 #include "dx11_renderer.h"
@@ -17,7 +17,7 @@ class DX11ViewImpl
     Im3dImplDx11 im3dImplDx11;
 
 public:
-    void *Draw(void *deviceContext, const WindowState &viewState)
+    void *Draw(void *deviceContext, const screenstate::ScreenState &viewState)
     {
         camera.WindowInput(viewState);
 
@@ -55,7 +55,7 @@ DX11View::~DX11View()
     delete m_impl;
 }
 
-void *DX11View::Draw(void *deviceContext, const struct WindowState &viewState)
+void *DX11View::Draw(void *deviceContext, const struct screenstate::ScreenState &viewState)
 {
     return m_impl->Draw(deviceContext, viewState);
 }
