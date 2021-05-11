@@ -5,7 +5,7 @@
 
 #include "gl_include.h"
 #include "camera_state.h"
-#include "window_state.h"
+#include "screenstate.h"
 #include "gl3_renderer.h"
 #include "shader_source.h"
 

@@ -1,4 +1,4 @@
-#include "win32_window.h"
+#include "win32window.h"
 #include "wgl_context.h"
 #include "gl3_renderer.h"
 #include "orbit_camera.h"
@@ -13,12 +13,13 @@ int main(int argc, char **argv)
     static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
     plog::init(plog::verbose, &debugOutputAppender);
 
-    Win32Window window;
-    auto hwnd = window.Create(640, 480, L"im3d_minimum_gl3");
+    screenstate::Win32Window window(L"CLASS_NAME");
+    auto hwnd = window.Create(L"im3d_minimum_gl3", 640, 480);
     if (!hwnd)
     {
         return 1;
     }
+    window.Show();
 
     WGLContext wgl;
     if (!wgl.Create(hwnd, 3, 0))
@@ -33,19 +34,19 @@ int main(int argc, char **argv)
 
     OrbitCamera camera;
 
-    while (window.IsRunning())
+    screenstate::ScreenState state;
+    while (window.Update(&state))
     {
         // camera update
-        auto &windowState = window.GetState();
-        camera.WindowInput(windowState);
+        camera.WindowInput(state);
 
-        Im3d_Impl_NewFrame(&camera.state, &windowState);
+        Im3d_Impl_NewFrame(&camera.state, &state);
         // process gizmo, not draw, build draw list.
         Im3d::Gizmo("GizmoUnified", world.data());
         Im3d::EndFrame();
 
         // render
-        renderer.NewFrame(windowState.Width, windowState.Height);              // setViewPort & clear background
+        renderer.NewFrame(state.Width, state.Height);              // setViewPort & clear background
         renderer.DrawTeapot(camera.state.viewProjection.data(), world.data()); // use manipulated world
         im3dImplGL3.Draw(camera.state.viewProjection.data());
 

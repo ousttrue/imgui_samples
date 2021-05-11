@@ -22,7 +22,7 @@ ADD_DEFINITIONS(
 SUBDIRS(
     screenstate
     im3d
-    # im3d_minimum_gl3
+    im3d_minimum_gl3
     # im3d_minimum_es3
     im3d_minimum_dx11
     # im3d_in_imgui_view_dx11

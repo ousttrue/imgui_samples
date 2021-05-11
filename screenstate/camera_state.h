@@ -1,5 +1,6 @@
 #pragma once
 #include "array_math.h"
+#include <stdint.h>
 
 namespace camera
 {
