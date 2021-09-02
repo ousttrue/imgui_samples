@@ -8,6 +8,8 @@
 
 #include <plog/Log.h>
 #include <plog/Appenders/DebugOutputAppender.h>
+#include <plog/Formatters/TxtFormatter.h>
+#include <plog/Init.h>
 
 int main(int argc, char **argv)
 {
