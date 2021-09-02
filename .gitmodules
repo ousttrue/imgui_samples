@@ -1,12 +1,12 @@
 [submodule "dependencies/im3d"]
-	path = dependencies/im3d
+	path = _external/im3d/im3d
 	url = https://github.com/john-chapman/im3d.git
 [submodule "dependencies/json"]
-	path = dependencies/json
+	path = _external/json/json
 	url = https://github.com/nlohmann/json.git
 [submodule "dependencies/plog"]
-	path = dependencies/plog
+	path = _external/plog/plog
 	url = https://github.com/SergiusTheBest/plog.git
 [submodule "dependencies/imgui"]
-	path = dependencies/imgui
+	path = _external/imgui/imgui
 	url = https://github.com/ocornut/imgui.git
