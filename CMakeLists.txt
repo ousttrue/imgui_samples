@@ -1,30 +1,11 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
-PROJECT(imgui_samples VERSION 0.1.0)
+cmake_minimum_required(VERSION 3.0.0)
+project(imgui_samples VERSION 0.1.0)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/bin)
 
-INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_LIST_DIR}/dependencies/im3d
-    ${CMAKE_CURRENT_LIST_DIR}/dependencies/imgui
-    ${CMAKE_CURRENT_LIST_DIR}/dependencies/imgui/examples
-    ${CMAKE_CURRENT_LIST_DIR}/dependencies/json/single_include
-    ${CMAKE_CURRENT_LIST_DIR}/dependencies/plog/include
-    ${CMAKE_CURRENT_LIST_DIR}/common
-    )
-LINK_DIRECTORIES(
-    )
-ADD_DEFINITIONS(
-    -DUNICODE
-    -D_UNICODE
-    -D_CRT_SECURE_NO_WARNINGS
-    -DNOMINMAX
-    -DIM3D_VERTEX_ALIGNMENT=16
-    )
-
-SUBDIRS(
-    screenstate
-    im3d
-    im3d_minimum_gl3
-    # im3d_minimum_es3
-    im3d_minimum_dx11
-    im3d_in_imgui_view_dx11
-    # nodeeditor_dx11
-    )
+subdirs(_external screenstate common common_dx11 common_gl samples)

@@ -1,0 +1,5 @@
+set(TARGET_NAME common_gl)
+add_library(${TARGET_NAME} gl3_renderer.cpp im3d_impl_gl3.cpp)
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_compile_definitions(${TARGET_NAME} PRIVATE RENDERER_GLEW)
+target_link_libraries(${TARGET_NAME} PUBLIC plog im3d common)

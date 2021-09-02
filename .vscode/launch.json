@@ -5,10 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "gl3",
+            "name": "im3d_minimum_dx11",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/im3d_minimum_gl3/Debug/im3d_minimum_gl3.exe",
+            "program": "${workspaceFolder}/build/Debug/bin/im3d_minimum_dx11.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false
+        },
+        {
+            "name": "im3d_minimum_gl3",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/bin/im3d_minimum_gl3.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -31,36 +41,14 @@
         //     ],
         //     "externalConsole": false
         // },
-        // {
-        //     "name": "dx11",
-        //     "type": "cppvsdbg",
-        //     "request": "launch",
-        //     "program": "${workspaceFolder}/build/im3d_minimum_dx11/Debug/im3d_minimum_dx11.exe",
-        //     "args": [],
-        //     "stopAtEntry": false,
-        //     "cwd": "${workspaceFolder}",
-        //     "environment": [
-        //         {
-        //             "name": "PATH",
-        //             "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
-        //         }
-        //     ],
-        //     "externalConsole": false
-        // },
         {
-            "name": "dx11_view",
+            "name": "im3d_in_imgui_view_dx11",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/im3d_in_imgui_view_dx11/Debug/im3d_in_imgui_view_dx11.exe",
+            "program": "${workspaceFolder}/build/Debug/bin/im3d_in_imgui_view_dx11.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "PATH",
-                    "value": "${env:VCPKG_DIR}\\installed\\x64-windows\\bin;${env:PATH}"
-                }
-            ],
             "externalConsole": false
         },
         // {
